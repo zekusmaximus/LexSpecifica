@@ -1,35 +1,32 @@
-# Use Node.js as base image
-FROM node:18-alpine
+# Build stage for the frontend
+FROM node:18-alpine AS frontend-builder
+WORKDIR /app/frontend
+COPY frontend/package*.json ./
+RUN npm install
+COPY frontend/ ./
+RUN npm run build
 
-# Set working directory
+# Main app stage
+FROM node:18-alpine
 WORKDIR /app
 
-# Copy package files 
-COPY package*.json ./
-COPY frontend/package*.json ./frontend/
-COPY backend/package*.json ./backend/
-
-# Install dependencies
+# Copy backend dependencies
+COPY backend/package*.json ./
 RUN npm install
-RUN cd frontend && npm install
-RUN cd backend && npm install
 
-# Copy application code
-COPY . .
+# Copy backend code
+COPY backend/ ./
 
-# Build the frontend with Vite
-RUN cd frontend && npm run build
+# Create public directory and copy frontend build
+RUN mkdir -p public
+COPY --from=frontend-builder /app/frontend/dist/ ./public/
 
-# Setup static file serving for frontend build
-RUN mkdir -p /app/backend/public
-RUN cp -r /app/frontend/dist/* /app/backend/public/
-
-# Set environment variable for production
+# Set environment variables
 ENV NODE_ENV=production
 ENV PORT=8080
 
 # Expose the port
 EXPOSE 8080
 
-# Start the application
-CMD ["node", "backend/server.js"]
+# Start the server
+CMD ["node", "server.js"]
