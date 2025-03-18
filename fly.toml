@@ -1,5 +1,5 @@
 app = "lexspecifica"
-primary_region = "dfw"
+primary_region = "dfw"  # Change this to your preferred region
 
 [build]
   dockerfile = "Dockerfile"
