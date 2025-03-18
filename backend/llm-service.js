@@ -1,12 +1,15 @@
-// llm-service.js - Service for processing requests through LLM API
+// llm-service.js - Updated for Hugging Face
 
 const axios = require('axios');
+const { HfInference } = require('@huggingface/inference');
 const { constructPrompt } = require('./prompt-templates');
 
-// Environment variables should be set for API keys
-const LLM_API_KEY = process.env.LLM_API_KEY;
-const LLM_API_URL = process.env.LLM_API_URL || 'https://api.anthropic.com/v1/complete';
-const HF_API_KEY = process.env.HF_API_KEY; // For Hugging Face models
+// Environment variables
+const HF_API_KEY = process.env.HF_API_KEY;
+const HF_MODEL = process.env.HF_MODEL || "meta-llama/Llama-2-7b-chat-hf";
+
+// Initialize Hugging Face client
+const hf = new HfInference(HF_API_KEY);
 
 // Main function to process world concept through the LLM
 async function processWorldConcept(worldConcept, parameters = {}) {
@@ -59,10 +62,10 @@ async function processWorldConcept(worldConcept, parameters = {}) {
     
     // Send requests to LLM API in parallel for better performance
     const [legalFramework, policies, conflicts, legalDocuments] = await Promise.all([
-      generateFromLLM(legalFrameworkPrompt),
-      generateFromLLM(policiesPrompt),
-      generateFromLLM(conflictsPrompt),
-      generateFromLLM(legalDocumentsPrompt)
+      generateFromHuggingFace(legalFrameworkPrompt),
+      generateFromHuggingFace(policiesPrompt),
+      generateFromHuggingFace(conflictsPrompt),
+      generateFromHuggingFace(legalDocumentsPrompt)
     ]);
     
     // Process and structure the responses
@@ -78,76 +81,28 @@ async function processWorldConcept(worldConcept, parameters = {}) {
   }
 }
 
-// Function to send a prompt to the LLM API and get a response
-async function generateFromLLM(prompt) {
+// Function to generate text using Hugging Face Inference API
+async function generateFromHuggingFace(prompt, model = HF_MODEL) {
   try {
-    // For Anthropic Claude API
-    const response = await axios.post(
-      LLM_API_URL,
-      {
-        prompt: `\n\nHuman: ${prompt}\n\nAssistant:`,
-        model: "claude-3-opus-20240229",
-        max_tokens_to_sample: 1000,
-        temperature: 0.7
-      },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': LLM_API_KEY,
-          'anthropic-version': '2023-06-01'
-        }
+    const response = await hf.textGeneration({
+      model: model,
+      inputs: prompt,
+      parameters: {
+        max_new_tokens: 1000,
+        temperature: 0.7,
+        top_p: 0.95,
+        do_sample: true
       }
-    );
+    });
     
-    return response.data.completion;
+    return response.generated_text;
   } catch (error) {
-    console.error('Error calling LLM API:', error.response?.data || error.message);
-    throw new Error('Failed to generate content from language model');
-  }
-}
-
-// Alternative function to use Hugging Face models
-async function generateFromHuggingFace(prompt, model = "mistralai/Mixtral-8x7B-Instruct-v0.1") {
-  try {
-    const response = await axios.post(
-      `https://api-inference.huggingface.co/models/${model}`,
-      { inputs: prompt },
-      {
-        headers: {
-          'Authorization': `Bearer ${HF_API_KEY}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-    
-    return response.data[0].generated_text;
-  } catch (error) {
-    console.error('Error with Hugging Face API:', error.response?.data || error.message);
+    console.error('Error with Hugging Face API:', error.message);
     throw new Error('Failed to generate from Hugging Face model');
   }
 }
 
-// Generate specific document types based on the world concept
-async function generateDocument(type, worldConcept, parameters = {}) {
-  try {
-    const documentPrompt = constructPrompt(`document-${type}`, {
-      worldConcept,
-      ...parameters
-    });
-    
-    const documentContent = await generateFromLLM(documentPrompt);
-    
-    return {
-      type,
-      title: `${type.charAt(0).toUpperCase() + type.slice(1)} for ${worldConcept.substring(0, 30)}...`,
-      content: documentContent.trim()
-    };
-  } catch (error) {
-    console.error('Error generating document:', error);
-    throw new Error('Failed to generate document');
-  }
-}
-
+// [Rest of your existing processing functions remain the same]
 // Process the policies response into a structured format
 function processPolicies(policiesResponse) {
   // Split by numbered items or bullet points
@@ -197,6 +152,27 @@ function processLegalDocuments(legalDocumentsResponse) {
   }
   
   return documents;
+}
+
+// Generate specific document types based on the world concept
+async function generateDocument(type, worldConcept, parameters = {}) {
+  try {
+    const documentPrompt = constructPrompt(`document-${type}`, {
+      worldConcept,
+      ...parameters
+    });
+    
+    const documentContent = await generateFromHuggingFace(documentPrompt);
+    
+    return {
+      type,
+      title: `${type.charAt(0).toUpperCase() + type.slice(1)} for ${worldConcept.substring(0, 30)}...`,
+      content: documentContent.trim()
+    };
+  } catch (error) {
+    console.error('Error generating document:', error);
+    throw new Error('Failed to generate document');
+  }
 }
 
 module.exports = {
