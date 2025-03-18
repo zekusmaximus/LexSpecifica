@@ -4,9 +4,11 @@ const axios = require('axios');
 const { constructPrompt } = require('./prompt-templates');
 
 // Environment variables should be set for API keys
-const LLM_API_KEY = process.env.LLM_API_KEY;
-const LLM_API_URL = process.env.LLM_API_URL || 'https://api.anthropic.com/v1/complete';
 const HF_API_KEY = process.env.HF_API_KEY; // For Hugging Face models
+const HF_MODEL = process.env.HF_MODEL || "meta-llama/Llama-2-7b-chat-hf";
+
+// Initialize Hugging Face client
+const hf = new HfInference(HF_API_KEY);
 
 // Main function to process world concept through the LLM
 async function processWorldConcept(worldConcept, parameters = {}) {
