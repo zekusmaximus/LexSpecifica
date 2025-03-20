@@ -17,57 +17,33 @@ function App() {
     setIsGenerating(true);
     
     try {
-      // In a production environment, this would be an actual API call
-      // For now, we'll simulate it with a delay and mock data
+      // Make an actual API call to the backend
+      const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          worldConcept,
+          parameters: {
+            techLevel,
+            governmentType,
+            detailLevel,
+            worldElements: [],
+            citizenRights: []
+          }
+        }),
+      });
       
-      // Example of what the API call would look like:
-      // const response = await fetch('/api/generate', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify({
-      //     worldConcept,
-      //     parameters: {
-      //       techLevel,
-      //       governmentType,
-      //       detailLevel,
-      //       worldElements: [],
-      //       citizenRights: []
-      //     }
-      //   }),
-      // });
-      // const result = await response.json();
+      if (!response.ok) {
+        throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
+      }
       
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Mock response data
-      const result = {
-        legalFramework: `This is a ${detailLevel} legal framework for ${worldConcept} with a technology level of ${techLevel} and a ${governmentType || 'unspecified'} government type.`,
-        policies: [
-          `Universal Rights Protocol`,
-          `Resource Allocation Directive`,
-          `Citizenship Classification Act`,
-          `Intergroup Conflict Resolution Statute`,
-          `Authority Transfer Procedure`
-        ],
-        conflicts: [
-          `A dispute arises when a citizen claims rights that conflict with the established order.`,
-          `A novel technology challenges existing legal frameworks and requires new regulation.`,
-          `Two classes of citizens have competing claims to scarce resources.`,
-          `A marginalized group seeks recognition under the existing legal structure.`,
-          `A legal authority exceeds its jurisdiction, creating precedent for future overreach.`
-        ],
-        legalDocuments: [{
-          title: "Foundation Charter",
-          content: `This document establishes the fundamental principles of governance for ${worldConcept}, acknowledging the inherent rights of all sentient entities and establishing the parameters of legal authority.`
-        }]
-      };
-      
+      const result = await response.json();
       setGeneratedContent(result);
     } catch (error) {
       console.error("Error generating content:", error);
+      alert("There was an error generating your legal framework. Please try again.");
     } finally {
       setIsGenerating(false);
     }
