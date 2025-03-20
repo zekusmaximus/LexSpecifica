@@ -91,32 +91,30 @@ function App() {
         {/* Hero image */}
         <div style={{ 
           width: '100%',
-          maxWidth: '600px',
-          height: '200px',
+          maxWidth: '700px',
+          height: '250px',
           backgroundColor: '#1a2a38',
           borderRadius: '8px',
-          marginBottom: '20px',
+          marginBottom: '10px',
           backgroundImage: `url(${heroImage})`,
-          backgroundSize: 'contain', // Changed to 'contain' to show the full image without cropping
+          backgroundSize: 'contain', 
           backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat', // Prevent the image from repeating
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          color: 'white',
-          textShadow: '2px 2px 4px rgba(0,0,0,0.7)'
+          backgroundRepeat: 'no-repeat',
+        }}></div>
+        
+        {/* Caption below image */}
+        <div style={{
+          backgroundColor: 'rgba(0,0,0,0.7)',
+          padding: '10px 15px',
+          borderRadius: '5px',
+          maxWidth: '700px',
+          width: '100%',
+          textAlign: 'center',
+          marginBottom: '20px'
         }}>
-          <div style={{ 
-            backgroundColor: 'rgba(0,0,0,0.5)', 
-            padding: '15px', 
-            borderRadius: '5px',
-            maxWidth: '80%',
-            textAlign: 'center'
-          }}>
-            <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
-              Create realistic legal frameworks for your fictional worlds
-            </span>
-          </div>
+          <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
+            Create realistic legal frameworks for your fictional worlds
+          </span>
         </div>
       </div>
       
