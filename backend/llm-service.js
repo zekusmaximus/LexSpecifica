@@ -29,7 +29,7 @@ async function generateLegalFramework(worldConcept, parameters = {}) {
     
     // Generate legal framework content
     const legalFramework = await generateFromHuggingFace(legalFrameworkPrompt, {
-      max_tokens: 300,
+      max_tokens: 1500,
       temperature: 0.5
     });
     
@@ -43,84 +43,51 @@ async function generateLegalFramework(worldConcept, parameters = {}) {
   }
 }
 
-// Function to generate policies only
-async function generatePolicies(worldConcept, parameters = {}) {
-  try {
-    // Extract parameters with defaults
-    const {
-      techLevel = 5,
-      governmentType = 'unspecified',
-      worldElements = [],
-      citizenRights = []
-    } = parameters;
-    
-    // Construct the policies prompt
-    const policiesPrompt = constructPrompt('policies', {
-      worldConcept,
-      techLevel,
-      governmentType,
-      worldElements,
-      citizenRights
-    });
-    
-    // Generate policies content
-    const policiesResponse = await generateFromHuggingFace(policiesPrompt, {
-      max_tokens: 250,
-      temperature: 0.5
-    });
-    
-    // Process the response
-    const policies = processPolicies(policiesResponse);
-    
-    // Return the generated content
-    return { policies };
-  } catch (error) {
-    console.error('Error generating policies:', error);
-    throw new Error('Failed to generate policies');
-  }
-}
+// Template for generating just the policies
+function policiesTemplate(baseContext) {
+  return `${baseContext}
 
-// Function to generate conflicts only
-async function generateConflicts(worldConcept, parameters = {}) {
-  try {
-    // Extract parameters with defaults
-    const {
-      techLevel = 5,
-      governmentType = 'unspecified',
-      worldElements = [],
-      citizenRights = []
-    } = parameters;
-    
-    // Construct the conflicts prompt
-    const conflictsPrompt = constructPrompt('conflicts', {
-      worldConcept,
-      techLevel,
-      governmentType,
-      worldElements,
-      citizenRights
-    });
-    
-    // Generate conflicts content
-    const conflictsResponse = await generateFromHuggingFace(conflictsPrompt, {
-      max_tokens: 350,
-      temperature: 0.6
-    });
-    
-    // Process the response
-    const conflicts = processConflicts(conflictsResponse);
-    
-    // Return the generated content
-    return { conflicts };
-  } catch (error) {
-    console.error('Error generating conflicts:', error);
-    throw new Error('Failed to generate conflicts');
-  }
+CREATE 5 DETAILED AND UNIQUE POLICIES FOR THIS FICTIONAL WORLD:
+
+You are crafting key laws or regulations that would exist in this fictional society. Each policy should be SPECIFIC to this world's unique characteristics and challenges.
+
+For EACH policy provide:
+1. A distinctive, creative POLICY NAME (4-8 words) that reflects the world's terminology and style
+2. A DETAILED DESCRIPTION (3-5 sentences) explaining:
+   - What the policy regulates or establishes
+   - Why this policy exists in this society
+   - How it is enforced
+   - Who is most affected by it
+   - Any interesting exceptions or special provisions
+
+IMPORTANT REQUIREMENTS:
+- Each policy must be directly related to the world concept
+- Policies should cover different aspects of society (resources, rights, technology, governance, etc.)
+- Use language, terminology, and concepts appropriate to the world's technology level
+- Include at least one policy that creates interesting story possibilities or conflicts
+- DO NOT use generic policy names or descriptions
+
+FORMAT YOUR RESPONSE AS:
+===POLICY 1===
+NAME: [Distinctive Policy Name]
+DESCRIPTION: [3-5 sentence detailed description specific to this world]
+
+===POLICY 2===
+NAME: [Distinctive Policy Name]
+DESCRIPTION: [3-5 sentence detailed description specific to this world]
+
+(Repeat for all 5 policies)
+
+IMPORTANT: Ensure each policy has both a DISTINCTIVE NAME and DETAILED DESCRIPTION specific to this world.
+`;
 }
 
 // Process the policies response into a structured format with name and description
 function processPolicies(policiesResponse) {
   const policies = [];
-  const policyRegex = /\d+\.\s*\[([^\]]+)\]:\s*\[([^\]]+)\]/g;
+  
+  // Try to parse the structured format with policy sections
+  const policyRegex = /===POLICY\s+\d+===\s+NAME:\s+(.*?)\s+DESCRIPTION:\s+([\s\S]*?)(?====POLICY|$)/g;
   
   let match;
   while ((match = policyRegex.exec(policiesResponse)) !== null) {
@@ -132,32 +99,47 @@ function processPolicies(policiesResponse) {
     }
   }
   
-  // If regex matching failed, try line-by-line approach
+  // If regex matching failed, try alternate formats
   if (policies.length === 0) {
-    const lines = policiesResponse.split('\n')
-      .filter(line => line.trim().length > 0);
+    const sections = policiesResponse.split(/\n\n+/);
     
-    for (const line of lines) {
-      const parts = line.split(':');
-      if (parts.length >= 2) {
-        // Remove any numbers or brackets
-        const name = parts[0].replace(/^\d+\.|\[|\]/g, '').trim();
-        const description = parts.slice(1).join(':').replace(/\[|\]/g, '').trim();
-        if (name && description) {
-          policies.push({ name, description });
+    for (const section of sections) {
+      // Try to find name: description format
+      const nameMatch = section.match(/NAME:|POLICY NAME:|TITLE:?\s*(.*?)(?:\n|$)/i);
+      const descMatch = section.match(/DESCRIPTION:|DETAILS:?\s*([\s\S]*?)(?=NAME:|POLICY NAME:|TITLE:|$)/i);
+      
+      if (nameMatch && nameMatch[1] && descMatch && descMatch[1]) {
+        policies.push({
+          name: nameMatch[1].trim(),
+          description: descMatch[1].trim()
+        });
+      } else {
+        // Try simple colon format
+        const parts = section.split(/:\s*/);
+        if (parts.length >= 2) {
+          const name = parts[0].replace(/^\d+\.|\s*POLICY\s*\d+\s*/i, '').trim();
+          const description = parts.slice(1).join(': ').trim();
+          
+          if (name && description && name.length < 100 && description.length > 30) {
+            policies.push({ name, description });
+          }
         }
       }
     }
   }
   
-  // Ensure we have 5 policies (or at least some policies)
-  return policies.length > 0 ? policies : [
-    { name: "Universal Rights Protocol", description: "Establishes the baseline rights for all citizens regardless of social standing." },
-    { name: "Resource Allocation Directive", description: "Governs the distribution of limited resources based on need and contribution." },
-    { name: "Citizenship Classification Act", description: "Defines different categories of citizenship and their associated privileges." },
-    { name: "Intergroup Conflict Resolution Statute", description: "Establishes procedures for resolving disputes between different social groups." },
-    { name: "Authority Transfer Procedure", description: "Regulates the process of transferring power between leadership councils." }
-  ];
+  // If we still have no policies or fewer than expected, DON'T use fallback data
+  // Instead, log the error and return what we have
+  if (policies.length === 0) {
+    console.error("Failed to parse policies from LLM response:", policiesResponse);
+    // Only use minimal fallback data to avoid the empty screen
+    return [{ 
+      name: "Error: Policy Generation Failed", 
+      description: "The system was unable to generate policies for your world concept. Please try again or refine your world description to include more specific details."
+    }];
+  }
+  
+  return policies;
 }
 
 // Process the conflicts response into an array of conflict descriptions
