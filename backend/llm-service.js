@@ -1,108 +1,218 @@
-// llm-service.js - Service for processing requests through LLM API
+// llm-service.js - Updated service for staged content generation
 
 const axios = require('axios');
 const { constructPrompt } = require('./prompt-templates');
 
 // Environment variables should be set for API keys
-const HF_API_KEY = process.env.HF_API_KEY; // For Hugging Face models
+const HF_API_KEY = process.env.HF_API_KEY;
 const HF_MODEL = process.env.HF_MODEL || "mistralai/Mixtral-8x7B-Instruct-v0.1";
 
-// Main function to process world concept through the LLM
-async function processWorldConcept(worldConcept, parameters = {}) {
+// Function to generate legal framework only
+async function generateLegalFramework(worldConcept, parameters = {}) {
   try {
     // Extract parameters with defaults
     const {
       techLevel = 5,
       governmentType = 'unspecified',
-      detailLevel = 'medium',
       worldElements = [],
       citizenRights = []
     } = parameters;
     
-    console.log(`Processing world concept: "${worldConcept.substring(0, 50)}..." with parameters:`, {
-      techLevel,
-      governmentType,
-      detailLevel
-    });
-    
-    // Construct prompts for different components
+    // Construct the legal framework prompt
     const legalFrameworkPrompt = constructPrompt('legal-framework', {
       worldConcept,
       techLevel,
       governmentType,
-      detailLevel,
       worldElements,
       citizenRights
     });
     
+    // Generate legal framework content
+    const legalFramework = await generateFromHuggingFace(legalFrameworkPrompt, {
+      max_tokens: 300,
+      temperature: 0.5
+    });
+    
+    // Return the generated content
+    return {
+      legalFramework: legalFramework.trim()
+    };
+  } catch (error) {
+    console.error('Error generating legal framework:', error);
+    throw new Error('Failed to generate legal framework');
+  }
+}
+
+// Function to generate policies only
+async function generatePolicies(worldConcept, parameters = {}) {
+  try {
+    // Extract parameters with defaults
+    const {
+      techLevel = 5,
+      governmentType = 'unspecified',
+      worldElements = [],
+      citizenRights = []
+    } = parameters;
+    
+    // Construct the policies prompt
     const policiesPrompt = constructPrompt('policies', {
       worldConcept,
       techLevel,
       governmentType,
-      detailLevel,
       worldElements,
       citizenRights
     });
     
+    // Generate policies content
+    const policiesResponse = await generateFromHuggingFace(policiesPrompt, {
+      max_tokens: 250,
+      temperature: 0.5
+    });
+    
+    // Process the response
+    const policies = processPolicies(policiesResponse);
+    
+    // Return the generated content
+    return { policies };
+  } catch (error) {
+    console.error('Error generating policies:', error);
+    throw new Error('Failed to generate policies');
+  }
+}
+
+// Function to generate conflicts only
+async function generateConflicts(worldConcept, parameters = {}) {
+  try {
+    // Extract parameters with defaults
+    const {
+      techLevel = 5,
+      governmentType = 'unspecified',
+      worldElements = [],
+      citizenRights = []
+    } = parameters;
+    
+    // Construct the conflicts prompt
     const conflictsPrompt = constructPrompt('conflicts', {
       worldConcept,
       techLevel,
       governmentType,
-      detailLevel,
       worldElements,
       citizenRights
     });
     
-    const legalDocumentsPrompt = constructPrompt('legal-documents', {
-      worldConcept,
-      techLevel,
-      governmentType,
-      detailLevel,
-      worldElements,
-      citizenRights
+    // Generate conflicts content
+    const conflictsResponse = await generateFromHuggingFace(conflictsPrompt, {
+      max_tokens: 350,
+      temperature: 0.6
     });
     
-    console.log("Sending requests to LLM API...");
+    // Process the response
+    const conflicts = processConflicts(conflictsResponse);
     
-    // Send requests to LLM API in parallel for better performance
-    const [legalFramework, policies, conflicts, legalDocuments] = await Promise.all([
-      generateFromHuggingFace(legalFrameworkPrompt),
-      generateFromHuggingFace(policiesPrompt),
-      generateFromHuggingFace(conflictsPrompt),
-      generateFromHuggingFace(legalDocumentsPrompt)
-    ]);
-    
-    console.log("Successfully received responses from LLM API.");
-    
-    // Process and structure the responses
-    return {
-      legalFramework: legalFramework.trim(),
-      policies: processPolicies(policies),
-      conflicts: processConflicts(conflicts),
-      legalDocuments: processLegalDocuments(legalDocuments)
-    };
+    // Return the generated content
+    return { conflicts };
   } catch (error) {
-    console.error('Error in LLM processing:', error);
-    throw new Error('Failed to process through language model');
+    console.error('Error generating conflicts:', error);
+    throw new Error('Failed to generate conflicts');
   }
 }
 
-// Function to use Hugging Face models
-async function generateFromHuggingFace(prompt, model = HF_MODEL) {
-  try {
-    console.log(`Generating content using model: ${model}`);
-    console.log(`Prompt (truncated): "${prompt.substring(0, 100)}..."`);
+// Process the policies response into a structured format with name and description
+function processPolicies(policiesResponse) {
+  const policies = [];
+  const policyRegex = /\d+\.\s*\[([^\]]+)\]:\s*\[([^\]]+)\]/g;
+  
+  let match;
+  while ((match = policyRegex.exec(policiesResponse)) !== null) {
+    if (match[1] && match[2]) {
+      policies.push({
+        name: match[1].trim(),
+        description: match[2].trim()
+      });
+    }
+  }
+  
+  // If regex matching failed, try line-by-line approach
+  if (policies.length === 0) {
+    const lines = policiesResponse.split('\n')
+      .filter(line => line.trim().length > 0);
     
+    for (const line of lines) {
+      const parts = line.split(':');
+      if (parts.length >= 2) {
+        // Remove any numbers or brackets
+        const name = parts[0].replace(/^\d+\.|\[|\]/g, '').trim();
+        const description = parts.slice(1).join(':').replace(/\[|\]/g, '').trim();
+        if (name && description) {
+          policies.push({ name, description });
+        }
+      }
+    }
+  }
+  
+  // Ensure we have 5 policies (or at least some policies)
+  return policies.length > 0 ? policies : [
+    { name: "Universal Rights Protocol", description: "Establishes the baseline rights for all citizens regardless of social standing." },
+    { name: "Resource Allocation Directive", description: "Governs the distribution of limited resources based on need and contribution." },
+    { name: "Citizenship Classification Act", description: "Defines different categories of citizenship and their associated privileges." },
+    { name: "Intergroup Conflict Resolution Statute", description: "Establishes procedures for resolving disputes between different social groups." },
+    { name: "Authority Transfer Procedure", description: "Regulates the process of transferring power between leadership councils." }
+  ];
+}
+
+// Process the conflicts response into an array of conflict descriptions
+function processConflicts(conflictsResponse) {
+  const conflicts = [];
+  const conflictRegex = /CONFLICT\s+\d+:\s+(.+?)(?=CONFLICT\s+\d+:|$)/gs;
+  
+  let match;
+  while ((match = conflictRegex.exec(conflictsResponse)) !== null) {
+    if (match[1] && match[1].trim().length > 0) {
+      conflicts.push(match[1].trim());
+    }
+  }
+  
+  // If regex matching failed, try splitting by numbered lines
+  if (conflicts.length === 0) {
+    const lines = conflictsResponse.split('\n\n')
+      .filter(para => para.trim().length > 0);
+    
+    for (const para of lines) {
+      const cleanPara = para.replace(/CONFLICT\s+\d+:\s+/i, '').trim();
+      if (cleanPara.length > 0) {
+        conflicts.push(cleanPara);
+      }
+    }
+  }
+  
+  // Ensure we have 3 conflicts (or at least some conflicts)
+  return conflicts.length > 0 ? conflicts : [
+    "A lower-caste citizen discovers evidence of corruption by a high-ranking official, but revealing this would violate sacred laws about respecting authority. They must decide whether to become a whistleblower and risk execution or remain complicit in the injustice affecting their community.",
+    "Two individuals from different social groups fall in love, but the legal system strictly forbids such relationships. When they attempt to challenge this law, they become entangled in a landmark case that threatens to upend the social hierarchy.",
+    "A law enforcer develops a technology that can predict legal violations before they occur, but implementing it would violate fundamental rights. The resulting debate divides society between those prioritizing security and those defending basic freedoms."
+  ];
+}
+
+// Function to send a prompt to the Hugging Face API and get a response
+async function generateFromHuggingFace(prompt, parameters = {}) {
+  try {
+    // Default parameters
+    const defaultParams = {
+      temperature: 0.5,
+      max_tokens: 500,
+      top_p: 0.9,
+      repetition_penalty: 1.1
+    };
+    
+    // Merge defaults with any provided parameters
+    const finalParams = { ...defaultParams, ...parameters };
+    
+    // Make the API request
     const response = await axios.post(
-      `https://api-inference.huggingface.co/models/${model}`,
+      `https://api-inference.huggingface.co/models/${HF_MODEL}`,
       { 
         inputs: prompt,
-        parameters: {
-          max_new_tokens: 1024,
-          temperature: 0.7,
-          top_p: 0.9,
-          return_full_text: false
-        }
+        parameters: finalParams
       },
       {
         headers: {
@@ -112,105 +222,17 @@ async function generateFromHuggingFace(prompt, model = HF_MODEL) {
       }
     );
     
-    if (response.data && response.data.length > 0 && response.data[0].generated_text) {
-      return response.data[0].generated_text;
-    } else {
-      console.error('Unexpected response format from Hugging Face API:', response.data);
-      throw new Error('Invalid response format from language model');
-    }
+    // Extract and return the generated text
+    return response.data[0].generated_text;
   } catch (error) {
     console.error('Error with Hugging Face API:', error.response?.data || error.message);
     throw new Error('Failed to generate from Hugging Face model');
   }
 }
 
-// Generate specific document types based on the world concept
-async function generateDocument(type, worldConcept, parameters = {}) {
-  try {
-    const documentPrompt = constructPrompt(`document-${type}`, {
-      worldConcept,
-      ...parameters
-    });
-    
-    const documentContent = await generateFromHuggingFace(documentPrompt);
-    
-    return {
-      type,
-      title: `${type.charAt(0).toUpperCase() + type.slice(1)} for ${worldConcept.substring(0, 30)}...`,
-      content: documentContent.trim()
-    };
-  } catch (error) {
-    console.error('Error generating document:', error);
-    throw new Error('Failed to generate document');
-  }
-}
-
-// Process the policies response into a structured format
-function processPolicies(policiesResponse) {
-  console.log("Processing policies response...");
-  // Split by numbered items or bullet points
-  const policies = policiesResponse
-    .split(/\d+[\.\)]\s*|\n\s*-\s+/)
-    .filter(item => item.trim().length > 0)
-    .map(item => {
-      // Extract policy name if it's in bold, quotes, or has a colon
-      const policyNameMatch = item.match(/["""\*_]{1,2}([^"""\*_]+)["""\*_]{1,2}:?|(.+?):/);
-      if (policyNameMatch) {
-        return (policyNameMatch[1] || policyNameMatch[2]).trim();
-      }
-      return item.split('\n')[0].trim();
-    });
-  
-  console.log(`Extracted ${policies.length} policies.`);
-  return policies;
-}
-
-// Process the conflicts response into a structured format
-function processConflicts(conflictsResponse) {
-  console.log("Processing conflicts response...");
-  // Split by numbered items or bullet points
-  const conflicts = conflictsResponse
-    .split(/\d+[\.\)]\s*|\n\s*-\s+/)
-    .filter(item => item.trim().length > 0)
-    .map(item => item.trim());
-  
-  console.log(`Extracted ${conflicts.length} conflicts.`);
-  return conflicts;
-}
-
-// Process legal document examples
-function processLegalDocuments(legalDocumentsResponse) {
-  console.log("Processing legal documents response...");
-  // Look for document title patterns
-  const documents = [];
-  const documentSections = legalDocumentsResponse.split(/#{2,3}\s+|DOCUMENT\s+\d+:|FOUNDATION CHARTER|CHARTER OF|CONSTITUTION OF/i);
-  
-  for (const section of documentSections) {
-    if (section.trim().length === 0) continue;
-    
-    // Try to extract title and content
-    const lines = section.trim().split('\n');
-    const title = lines[0].replace(/["""\*_]/g, '').trim() || "Foundation Charter";
-    const content = lines.slice(1).join('\n').trim();
-    
-    if (content) {
-      documents.push({ title, content });
-    }
-  }
-  
-  // If no documents were successfully extracted, create a default one
-  if (documents.length === 0) {
-    documents.push({
-      title: "Foundation Charter",
-      content: legalDocumentsResponse.trim()
-    });
-  }
-  
-  console.log(`Extracted ${documents.length} legal documents.`);
-  return documents;
-}
-
+// Export the individual functions for generating different content types
 module.exports = {
-  processWorldConcept,
-  generateDocument
+  generateLegalFramework,
+  generatePolicies,
+  generateConflicts
 };

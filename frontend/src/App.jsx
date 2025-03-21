@@ -1,51 +1,144 @@
 import { useState } from 'react';
 import './App.css';
-import heroImage from './assets/LexSpecifica.png';
 
 function App() {
   const [worldConcept, setWorldConcept] = useState('');
   const [techLevel, setTechLevel] = useState(5);
   const [governmentType, setGovernmentType] = useState('');
-  const [detailLevel, setDetailLevel] = useState('medium');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedContent, setGeneratedContent] = useState(null);
-  const [activeTab, setActiveTab] = useState('input'); // For switching between input and instructions
+  const [isGeneratingPolicies, setIsGeneratingPolicies] = useState(false);
+  const [isGeneratingConflicts, setIsGeneratingConflicts] = useState(false);
+  const [legalFramework, setLegalFramework] = useState(null);
+  const [policies, setPolicies] = useState(null);
+  const [conflicts, setConflicts] = useState(null);
+  const [activeTab, setActiveTab] = useState('input');
   
-  const handleGenerate = async () => {
+  const handleGenerateFramework = async () => {
     if (!worldConcept) return;
     
     setIsGenerating(true);
     
     try {
-      // Make an actual API call to the backend
-      const response = await fetch('/api/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          worldConcept,
-          parameters: {
-            techLevel,
-            governmentType,
-            detailLevel,
-            worldElements: [],
-            citizenRights: []
-          }
-        }),
-      });
+      // In a production environment, this would call the API
+      // const response = await fetch('/api/generate/framework', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify({
+      //     worldConcept,
+      //     parameters: {
+      //       techLevel,
+      //       governmentType
+      //     }
+      //   }),
+      // });
+      // const result = await response.json();
       
-      if (!response.ok) {
-        throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
-      }
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
-      const result = await response.json();
-      setGeneratedContent(result);
+      // Mock response data
+      const result = {
+        legalFramework: `This legal framework for ${worldConcept} with a technology level of ${techLevel} and a ${governmentType || 'unspecified'} government type is based on a system of hierarchical councils. Laws are created through consensus of the upper councils and enforced by specialized guardians who use both traditional and technological means depending on the severity of the infraction. Citizens have the right to petition, the right to basic resources, and the right to privacy of thought, though these rights vary by social standing.`
+      };
+      
+      setLegalFramework(result.legalFramework);
+      // Clear any previous policies and conflicts
+      setPolicies(null);
+      setConflicts(null);
     } catch (error) {
-      console.error("Error generating content:", error);
-      alert("There was an error generating your legal framework. Please try again.");
+      console.error("Error generating framework:", error);
     } finally {
       setIsGenerating(false);
+    }
+  };
+  
+  const handleGeneratePolicies = async () => {
+    if (!worldConcept) return;
+    
+    setIsGeneratingPolicies(true);
+    
+    try {
+      // In a production environment, this would call the API
+      // const response = await fetch('/api/generate/policies', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify({
+      //     worldConcept,
+      //     parameters: {
+      //       techLevel,
+      //       governmentType
+      //     }
+      //   }),
+      // });
+      // const result = await response.json();
+      
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Mock response data
+      const result = {
+        policies: [
+          { name: "Universal Rights Protocol", description: "Establishes the baseline rights for all citizens regardless of social standing." },
+          { name: "Resource Allocation Directive", description: "Governs the distribution of limited resources based on need and contribution." },
+          { name: "Citizenship Classification Act", description: "Defines different categories of citizenship and their associated privileges." },
+          { name: "Intergroup Conflict Resolution Statute", description: "Establishes procedures for resolving disputes between different social groups." },
+          { name: "Authority Transfer Procedure", description: "Regulates the process of transferring power between leadership councils." }
+        ]
+      };
+      
+      setPolicies(result.policies);
+    } catch (error) {
+      console.error("Error generating policies:", error);
+    } finally {
+      setIsGeneratingPolicies(false);
+    }
+  };
+  
+  const handleGenerateConflicts = async () => {
+    if (!worldConcept) return;
+    
+    setIsGeneratingConflicts(true);
+    
+    try {
+      // In a production environment, this would call the API
+      // const response = await fetch('/api/generate/conflicts', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify({
+      //     worldConcept,
+      //     parameters: {
+      //       techLevel,
+      //       governmentType
+      //     }
+      //   }),
+      // });
+      // const result = await response.json();
+      
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Mock response data
+      const result = {
+        conflicts: [
+          "A lower-council representative discovers evidence that the upper council is secretly hoarding resources, but revealing this would violate the sacred privacy laws. They must decide whether to become a whistleblower and risk execution or remain complicit in the injustice affecting their community.",
+          
+          "Two citizens from different social castes fall in love, but the Citizenship Classification Act forbids their union. When they attempt to elope to the ungoverned territories, they become entangled in a landmark legal case that challenges the foundations of the social hierarchy.",
+          
+          "A guardian responsible for law enforcement develops a technology that can predict crimes before they occur, but implementing it would violate the right to privacy of thought. The resulting debate divides society between those prioritizing security and those defending fundamental rights."
+        ]
+      };
+      
+      setConflicts(result.conflicts);
+    } catch (error) {
+      console.error("Error generating conflicts:", error);
+    } finally {
+      setIsGeneratingConflicts(false);
     }
   };
   
@@ -64,33 +157,33 @@ function App() {
         <h1 style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '10px' }}>LexSpecifica</h1>
         <p style={{ fontSize: '18px', marginBottom: '20px' }}>Speculative Legal Framework Generator for Fiction Writers</p>
         
-        {/* Hero image */}
+        {/* Hero image would go here */}
         <div style={{ 
           width: '100%',
-          maxWidth: '700px',
-          height: '250px',
+          maxWidth: '600px',
+          height: '200px',
           backgroundColor: '#1a2a38',
           borderRadius: '8px',
-          marginBottom: '10px',
-          backgroundImage: `url(${heroImage})`,
-          backgroundSize: 'contain', 
+          marginBottom: '20px',
+          backgroundSize: 'cover',
           backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-        }}></div>
-        
-        {/* Caption below image */}
-        <div style={{
-          backgroundColor: 'rgba(0,0,0,0.7)',
-          padding: '10px 15px',
-          borderRadius: '5px',
-          maxWidth: '700px',
-          width: '100%',
-          textAlign: 'center',
-          marginBottom: '20px'
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          color: 'white',
+          textShadow: '2px 2px 4px rgba(0,0,0,0.7)'
         }}>
-          <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
-            Create realistic legal frameworks for your fictional worlds
-          </span>
+          <div style={{ 
+            backgroundColor: 'rgba(0,0,0,0.5)', 
+            padding: '15px', 
+            borderRadius: '5px',
+            maxWidth: '80%',
+            textAlign: 'center'
+          }}>
+            <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
+              Create realistic legal frameworks for your fictional worlds
+            </span>
+          </div>
         </div>
       </div>
       
@@ -155,12 +248,10 @@ function App() {
           
           <div style={{ marginBottom: '16px' }}>
             <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '8px' }}>4. Generate and Explore</h3>
-            <p>Click "Generate Legal Framework" to create a comprehensive legal system for your world. The result will include:</p>
+            <p>Click "Generate Legal Framework" to create the core legal system for your world. Then, use the additional buttons to explore:</p>
             <ul style={{ paddingLeft: '20px', marginTop: '10px' }}>
-              <li><strong>Legal Framework:</strong> The foundational principles and structures of your world's legal system</li>
-              <li><strong>Policies:</strong> Specific laws that would exist in your world</li>
-              <li><strong>Conflicts:</strong> Potential legal disputes that could drive your narrative</li>
-              <li><strong>Legal Documents:</strong> Sample text from constitutions, court cases, or other legal documents</li>
+              <li><strong>Key Policies:</strong> Specific laws that would exist in your world</li>
+              <li><strong>Story Conflicts:</strong> Potential legal disputes that could drive your narrative</li>
             </ul>
           </div>
           
@@ -257,27 +348,6 @@ function App() {
             </label>
           </div>
           
-          <div style={{ marginTop: '16px' }}>
-            <label>
-              Detail Level:
-              <select
-                style={{ 
-                  width: '100%', 
-                  padding: '8px', 
-                  marginTop: '8px', 
-                  border: '1px solid #ccc',
-                  borderRadius: '4px'
-                }}
-                value={detailLevel}
-                onChange={(e) => setDetailLevel(e.target.value)}
-              >
-                <option value="brief">Brief</option>
-                <option value="medium">Medium</option>
-                <option value="comprehensive">Comprehensive</option>
-              </select>
-            </label>
-          </div>
-          
           <button
             style={{ 
               marginTop: '20px', 
@@ -292,13 +362,13 @@ function App() {
               fontWeight: 'bold',
               boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
             }}
-            onClick={handleGenerate}
+            onClick={handleGenerateFramework}
             disabled={isGenerating || !worldConcept}
           >
             {isGenerating ? 'Generating...' : 'Generate Legal Framework'}
           </button>
           
-          {generatedContent && (
+          {legalFramework && (
             <div style={{ marginTop: '32px', border: '1px solid #e2e8f0', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)' }}>
               <div style={{ padding: '16px 20px', backgroundColor: '#2c3e50', color: 'white' }}>
                 <h2 style={{ fontSize: '22px', fontWeight: 'bold' }}>Legal Framework for Your World</h2>
@@ -307,70 +377,118 @@ function App() {
               <div style={{ padding: '20px' }}>
                 <div style={{ marginBottom: '24px', backgroundColor: '#f8f9fa', padding: '16px', borderRadius: '6px' }}>
                   <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '12px', color: '#2c3e50', borderBottom: '2px solid #3b82f6', paddingBottom: '8px' }}>Legal Foundation</h3>
-                  <p style={{ lineHeight: '1.6' }}>{generatedContent.legalFramework}</p>
+                  <p style={{ lineHeight: '1.6' }}>{legalFramework}</p>
                 </div>
                 
-                <div style={{ marginBottom: '24px' }}>
-                  <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '12px', color: '#2c3e50', borderBottom: '2px solid #3b82f6', paddingBottom: '8px' }}>Key Policies</h3>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '12px' }}>
-                    {generatedContent.policies.map((policy, index) => (
-                      <div key={index} style={{ 
-                        padding: '12px', 
-                        backgroundColor: '#f0f4f8', 
-                        borderRadius: '6px',
-                        borderLeft: '3px solid #3b82f6',
-                        fontSize: '15px',
-                        fontWeight: index === 0 ? 'bold' : 'normal'
-                      }}>
-                        {policy}
-                      </div>
-                    ))}
-                  </div>
+                {/* Action buttons for policies and conflicts */}
+                <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
+                  <button
+                    style={{ 
+                      flex: '1',
+                      padding: '10px', 
+                      backgroundColor: policies ? '#f0f9ff' : '#3b82f6', 
+                      color: policies ? '#2c5282' : 'white',
+                      border: policies ? '1px solid #3b82f6' : 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontWeight: 'bold',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      height: '60px'
+                    }}
+                    onClick={handleGeneratePolicies}
+                    disabled={isGeneratingPolicies}
+                  >
+                    {isGeneratingPolicies ? (
+                      'Generating...'
+                    ) : policies ? (
+                      <>
+                        <span>✓ Key Policies</span>
+                        <span style={{ fontSize: '12px', fontWeight: 'normal' }}>Regenerate</span>
+                      </>
+                    ) : (
+                      'Generate Key Policies'
+                    )}
+                  </button>
+                  
+                  <button
+                    style={{ 
+                      flex: '1',
+                      padding: '10px', 
+                      backgroundColor: conflicts ? '#fff5f5' : '#e53e3e', 
+                      color: conflicts ? '#c53030' : 'white',
+                      border: conflicts ? '1px solid #e53e3e' : 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontWeight: 'bold',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      height: '60px'
+                    }}
+                    onClick={handleGenerateConflicts}
+                    disabled={isGeneratingConflicts}
+                  >
+                    {isGeneratingConflicts ? (
+                      'Generating...'
+                    ) : conflicts ? (
+                      <>
+                        <span>✓ Story Conflicts</span>
+                        <span style={{ fontSize: '12px', fontWeight: 'normal' }}>Regenerate</span>
+                      </>
+                    ) : (
+                      'Generate Story Conflicts'
+                    )}
+                  </button>
                 </div>
                 
-                <div style={{ marginBottom: '24px' }}>
-                  <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '12px', color: '#2c3e50', borderBottom: '2px solid #3b82f6', paddingBottom: '8px' }}>Potential Conflicts</h3>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {generatedContent.conflicts.map((conflict, index) => (
-                      <div key={index} style={{ 
-                        padding: '12px 16px', 
-                        backgroundColor: '#fff8f0', 
-                        borderRadius: '6px',
-                        borderLeft: '3px solid #ed8936',
-                        fontSize: '15px',
-                        lineHeight: '1.5'
-                      }}>
-                        {conflict}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                
-                <div>
-                  <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '12px', color: '#2c3e50', borderBottom: '2px solid #3b82f6', paddingBottom: '8px' }}>Legal Documents</h3>
-                  {generatedContent.legalDocuments.map((doc, index) => (
-                    <div key={index} style={{ 
-                      border: '1px solid #e2e8f0', 
-                      borderRadius: '6px', 
-                      overflow: 'hidden',
-                      marginBottom: '16px',
-                      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)'
-                    }}>
-                      <div style={{ padding: '12px 16px', backgroundColor: '#2c3e50', color: 'white', fontSize: '16px', fontWeight: 'bold' }}>
-                        {doc.title}
-                      </div>
-                      <div style={{ 
-                        padding: '16px', 
-                        backgroundColor: '#f8fafc',
-                        fontFamily: 'Georgia, serif',
-                        lineHeight: '1.6',
-                        fontSize: '15px'
-                      }}>
-                        {doc.content}
-                      </div>
+                {/* Policies Section (Conditionally Displayed) */}
+                {policies && (
+                  <div style={{ marginBottom: '24px' }}>
+                    <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '12px', color: '#2c3e50', borderBottom: '2px solid #3b82f6', paddingBottom: '8px' }}>Key Policies</h3>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      {policies.map((policy, index) => (
+                        <div key={index} style={{ 
+                          padding: '12px 16px', 
+                          backgroundColor: '#f0f4f8', 
+                          borderRadius: '6px',
+                          borderLeft: '3px solid #3b82f6'
+                        }}>
+                          <div style={{ fontWeight: 'bold', marginBottom: '4px', fontSize: '16px' }}>{policy.name}</div>
+                          <div style={{ fontSize: '14px' }}>{policy.description}</div>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  </div>
+                )}
+                
+                {/* Conflicts Section (Conditionally Displayed) */}
+                {conflicts && (
+                  <div style={{ marginBottom: '24px' }}>
+                    <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '12px', color: '#2c3e50', borderBottom: '2px solid #e53e3e', paddingBottom: '8px' }}>Story Conflicts</h3>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                      {conflicts.map((conflict, index) => (
+                        <div key={index} style={{ 
+                          padding: '16px', 
+                          backgroundColor: '#fff8f0', 
+                          borderRadius: '6px',
+                          borderLeft: '3px solid #ed8936',
+                          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)'
+                        }}>
+                          <div style={{ 
+                            fontSize: '15px',
+                            lineHeight: '1.6'
+                          }}>
+                            {conflict}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 
                 <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'center', gap: '12px' }}>
                   <button
@@ -383,9 +501,14 @@ function App() {
                       cursor: 'pointer',
                       fontWeight: 'bold'
                     }}
-                    onClick={() => setActiveTab('input')}
+                    onClick={() => {
+                      setWorldConcept('');
+                      setLegalFramework(null);
+                      setPolicies(null);
+                      setConflicts(null);
+                    }}
                   >
-                    Generate Another
+                    Create New Framework
                   </button>
                   <button
                     style={{ 

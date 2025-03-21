@@ -24,29 +24,61 @@ app.use((req, res, next) => {
   next();
 });
 
-// Routes
-app.post('/api/generate', async (req, res) => {
+// Routes for staged content generation
+app.post('/api/generate/framework', async (req, res) => {
   try {
-    console.log('Received generation request');
     const { worldConcept, parameters } = req.body;
     
     if (!worldConcept) {
-      console.log('Error: World concept is required');
       return res.status(400).json({ error: 'World concept is required' });
     }
     
-    console.log(`Processing world concept: "${worldConcept.substring(0, 50)}..."`);
-    
-    // Process request through LLM service
-    const generatedContent = await processWorldConcept(worldConcept, parameters);
-    
-    console.log('Content generated successfully');
+    // Generate just the legal framework
+    const result = await generateLegalFramework(worldConcept, parameters);
     
     // Return generated content
-    res.json(generatedContent);
+    res.json(result);
   } catch (error) {
-    console.error('Error generating content:', error);
-    res.status(500).json({ error: 'Failed to generate content: ' + error.message });
+    console.error('Error generating legal framework:', error);
+    res.status(500).json({ error: 'Failed to generate legal framework' });
+  }
+});
+
+app.post('/api/generate/policies', async (req, res) => {
+  try {
+    const { worldConcept, parameters } = req.body;
+    
+    if (!worldConcept) {
+      return res.status(400).json({ error: 'World concept is required' });
+    }
+    
+    // Generate just the policies
+    const result = await generatePolicies(worldConcept, parameters);
+    
+    // Return generated content
+    res.json(result);
+  } catch (error) {
+    console.error('Error generating policies:', error);
+    res.status(500).json({ error: 'Failed to generate policies' });
+  }
+});
+
+app.post('/api/generate/conflicts', async (req, res) => {
+  try {
+    const { worldConcept, parameters } = req.body;
+    
+    if (!worldConcept) {
+      return res.status(400).json({ error: 'World concept is required' });
+    }
+    
+    // Generate just the conflicts
+    const result = await generateConflicts(worldConcept, parameters);
+    
+    // Return generated content
+    res.json(result);
+  } catch (error) {
+    console.error('Error generating conflicts:', error);
+    res.status(500).json({ error: 'Failed to generate conflicts' });
   }
 });
 
