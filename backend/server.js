@@ -4,7 +4,7 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
-const { processWorldConcept, generateDocument } = require('./llm-service');
+const { generateLegalFramework, generatePolicies, generateConflicts, generateDocument } = require('./llm-service');
 const db = require('./database');
 
 // Load environment variables

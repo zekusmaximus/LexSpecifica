@@ -216,5 +216,6 @@ async function generateFromHuggingFace(prompt, parameters = {}) {
 module.exports = {
   generateLegalFramework,
   generatePolicies,
-  generateConflicts
+  generateConflicts,
+  generateDocument
 };
