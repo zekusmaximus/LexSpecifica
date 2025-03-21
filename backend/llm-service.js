@@ -1,4 +1,4 @@
-// llm-service.js - Updated service for staged content generation
+// llm-service.js - Complete rewrite with correct function order
 
 const axios = require('axios');
 const { constructPrompt } = require('./prompt-templates');
@@ -6,6 +6,43 @@ const { constructPrompt } = require('./prompt-templates');
 // Environment variables should be set for API keys
 const HF_API_KEY = process.env.HF_API_KEY;
 const HF_MODEL = process.env.HF_MODEL || "mistralai/Mixtral-8x7B-Instruct-v0.1";
+
+// Function to send a prompt to the Hugging Face API and get a response
+async function generateFromHuggingFace(prompt, parameters = {}) {
+  try {
+    // Default parameters
+    const defaultParams = {
+      temperature: 0.5,
+      max_tokens: 500,
+      top_p: 0.9,
+      repetition_penalty: 1.1
+    };
+    
+    // Merge defaults with any provided parameters
+    const finalParams = { ...defaultParams, ...parameters };
+    
+    // Make the API request
+    const response = await axios.post(
+      `https://api-inference.huggingface.co/models/${HF_MODEL}`,
+      { 
+        inputs: prompt,
+        parameters: finalParams
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${HF_API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+    
+    // Extract and return the generated text
+    return response.data[0].generated_text;
+  } catch (error) {
+    console.error('Error with Hugging Face API:', error.response?.data || error.message);
+    throw new Error('Failed to generate from Hugging Face model');
+  }
+}
 
 // Function to generate legal framework only
 async function generateLegalFramework(worldConcept, parameters = {}) {
@@ -65,8 +102,8 @@ async function generatePolicies(worldConcept, parameters = {}) {
     
     // Generate policies content
     const policiesResponse = await generateFromHuggingFace(policiesPrompt, {
-      max_tokens: 1000,  // Increased from 250 to get fuller descriptions
-      temperature: 0.7   // Slightly increased for more creative variety
+      max_tokens: 1000,
+      temperature: 0.7
     });
     
     // Process the response
@@ -80,43 +117,67 @@ async function generatePolicies(worldConcept, parameters = {}) {
   }
 }
 
-// Template for generating just the policies
-function policiesTemplate(baseContext) {
-  return `${baseContext}
+// Function to generate conflicts only
+async function generateConflicts(worldConcept, parameters = {}) {
+  try {
+    // Extract parameters with defaults
+    const {
+      techLevel = 5,
+      governmentType = 'unspecified',
+      worldElements = [],
+      citizenRights = []
+    } = parameters;
+    
+    // Construct the conflicts prompt
+    const conflictsPrompt = constructPrompt('conflicts', {
+      worldConcept,
+      techLevel,
+      governmentType,
+      worldElements,
+      citizenRights
+    });
+    
+    // Generate conflicts content
+    const conflictsResponse = await generateFromHuggingFace(conflictsPrompt, {
+      max_tokens: 500,
+      temperature: 0.6
+    });
+    
+    // Process the response
+    const conflicts = processConflicts(conflictsResponse);
+    
+    // Return the generated content
+    return { conflicts };
+  } catch (error) {
+    console.error('Error generating conflicts:', error);
+    throw new Error('Failed to generate conflicts');
+  }
+}
 
-CREATE 5 DETAILED AND UNIQUE POLICIES FOR THIS FICTIONAL WORLD:
-
-You are crafting key laws or regulations that would exist in this fictional society. Each policy should be SPECIFIC to this world's unique characteristics and challenges.
-
-For EACH policy provide:
-1. A distinctive, creative POLICY NAME (4-8 words) that reflects the world's terminology and style
-2. A DETAILED DESCRIPTION (3-5 sentences) explaining:
-   - What the policy regulates or establishes
-   - Why this policy exists in this society
-   - How it is enforced
-   - Who is most affected by it
-   - Any interesting exceptions or special provisions
-
-IMPORTANT REQUIREMENTS:
-- Each policy must be directly related to the world concept
-- Policies should cover different aspects of society (resources, rights, technology, governance, etc.)
-- Use language, terminology, and concepts appropriate to the world's technology level
-- Include at least one policy that creates interesting story possibilities or conflicts
-- DO NOT use generic policy names or descriptions
-
-FORMAT YOUR RESPONSE AS:
-===POLICY 1===
-NAME: [Distinctive Policy Name]
-DESCRIPTION: [3-5 sentence detailed description specific to this world]
-
-===POLICY 2===
-NAME: [Distinctive Policy Name]
-DESCRIPTION: [3-5 sentence detailed description specific to this world]
-
-(Repeat for all 5 policies)
-
-IMPORTANT: Ensure each policy has both a DISTINCTIVE NAME and DETAILED DESCRIPTION specific to this world.
-`;
+// Function to generate specific document types
+async function generateDocument(type, worldConcept, parameters = {}) {
+  try {
+    // Construct appropriate prompt based on document type
+    const documentPrompt = constructPrompt(`document-${type}`, {
+      worldConcept,
+      ...parameters
+    });
+    
+    // Generate the document content
+    const documentContent = await generateFromHuggingFace(documentPrompt, {
+      max_tokens: 1000,
+      temperature: 0.6
+    });
+    
+    return {
+      type,
+      title: `${type.charAt(0).toUpperCase() + type.slice(1)} for ${worldConcept.substring(0, 30)}...`,
+      content: documentContent.trim()
+    };
+  } catch (error) {
+    console.error('Error generating document:', error);
+    throw new Error(`Failed to generate document of type ${type}`);
+  }
 }
 
 // Process the policies response into a structured format with name and description
@@ -193,7 +254,7 @@ function processConflicts(conflictsResponse) {
   
   // If regex matching failed, try splitting by numbered lines
   if (conflicts.length === 0) {
-    const lines = conflictsResponse.split('\n\n')
+    const lines = conflictsResponse.split(/\n\n+/)
       .filter(para => para.trim().length > 0);
     
     for (const para of lines) {
@@ -204,7 +265,7 @@ function processConflicts(conflictsResponse) {
     }
   }
   
-  // Ensure we have 3 conflicts (or at least some conflicts)
+  // Ensure we have conflicts (or at least some conflicts)
   return conflicts.length > 0 ? conflicts : [
     "A lower-caste citizen discovers evidence of corruption by a high-ranking official, but revealing this would violate sacred laws about respecting authority. They must decide whether to become a whistleblower and risk execution or remain complicit in the injustice affecting their community.",
     "Two individuals from different social groups fall in love, but the legal system strictly forbids such relationships. When they attempt to challenge this law, they become entangled in a landmark case that threatens to upend the social hierarchy.",
@@ -212,44 +273,7 @@ function processConflicts(conflictsResponse) {
   ];
 }
 
-// Function to send a prompt to the Hugging Face API and get a response
-async function generateFromHuggingFace(prompt, parameters = {}) {
-  try {
-    // Default parameters
-    const defaultParams = {
-      temperature: 0.5,
-      max_tokens: 500,
-      top_p: 0.9,
-      repetition_penalty: 1.1
-    };
-    
-    // Merge defaults with any provided parameters
-    const finalParams = { ...defaultParams, ...parameters };
-    
-    // Make the API request
-    const response = await axios.post(
-      `https://api-inference.huggingface.co/models/${HF_MODEL}`,
-      { 
-        inputs: prompt,
-        parameters: finalParams
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${HF_API_KEY}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-    
-    // Extract and return the generated text
-    return response.data[0].generated_text;
-  } catch (error) {
-    console.error('Error with Hugging Face API:', error.response?.data || error.message);
-    throw new Error('Failed to generate from Hugging Face model');
-  }
-}
-
-// Export the individual functions for generating different content types
+// Export all the necessary functions
 module.exports = {
   generateLegalFramework,
   generatePolicies,
