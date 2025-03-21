@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import './App.css';
+import heroImage from './assets/LexSpecifica.png';
 
 function App() {
   const [worldConcept, setWorldConcept] = useState('');
@@ -105,22 +106,6 @@ function App() {
     setIsGeneratingConflicts(true);
     
     try {
-      // In a production environment, this would call the API
-      // const response = await fetch('/api/generate/conflicts', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify({
-      //     worldConcept,
-      //     parameters: {
-      //       techLevel,
-      //       governmentType
-      //     }
-      //   }),
-      // });
-      // const result = await response.json();
-      
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 1500));
       
@@ -135,20 +120,20 @@ function App() {
         ]
       };
       
-// Add this function here
-const togglePolicy = (index) => {
-  setExpandedPolicies(prev => ({
-    ...prev,
-    [index]: !prev[index]
-  }));
-};
-
       setConflicts(result.conflicts);
     } catch (error) {
       console.error("Error generating conflicts:", error);
     } finally {
       setIsGeneratingConflicts(false);
     }
+  };
+  
+  // Move the function HERE - outside of handleGenerateConflicts
+  const togglePolicy = (index) => {
+    setExpandedPolicies(prev => ({
+      ...prev,
+      [index]: !prev[index]
+    }));
   };
   
   return (
@@ -173,21 +158,19 @@ const togglePolicy = (index) => {
           height: '200px',
           backgroundColor: '#1a2a38',
           borderRadius: '8px',
-          marginBottom: '20px',
-          backgroundSize: 'cover',
+          marginBottom: '10px',
+          backgroundImage: `url(${heroImage})`,
+          backgroundSize: 'contain',
           backgroundPosition: 'center',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          color: 'white',
-          textShadow: '2px 2px 4px rgba(0,0,0,0.7)'
+          backgroundRepeat: 'no-repeat'
         }}>
           <div style={{ 
             backgroundColor: 'rgba(0,0,0,0.5)', 
-            padding: '15px', 
+            padding: '10xp 15px', 
             borderRadius: '5px',
-            maxWidth: '80%',
-            textAlign: 'center'
+            maxWidth: '600px',
+            textAlign: 'center',
+            marginBottom: '10px'
           }}>
             <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
               Create realistic legal frameworks for your fictional worlds

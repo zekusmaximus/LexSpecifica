@@ -44,18 +44,19 @@ GUIDELINES:
 function legalFrameworkTemplate(baseContext) {
   return `${baseContext}
 
-CREATE A COMPREHENSIVE LEGAL FRAMEWORK OVERVIEW:
-- Describe the legal system of this world in 300-400 words
-- Include these key aspects:
-  * The fundamental structure of the legal system 
-  * How laws are created, enforced, and adjudicated
-  * Rights and obligations of citizens/inhabitants
-  * Relationship between branches of power
-  * Unique legal concepts specific to this world
-- Format as 3-5 clear paragraphs with logical structure
-- Use terminology appropriate to the world's technology level and culture
+CREATE A DETAILED LEGAL FRAMEWORK OVERVIEW:
+- Provide a thorough description (400-600 words) of this world's legal system
+- Cover these essential elements in depth:
+  * The fundamental structure and principles of the legal system
+  * The process for creating, modifying, and interpreting laws
+  * How laws are enforced and by whom
+  * The system for adjudicating disputes and administering justice
+  * Rights, obligations, and legal status of different types of citizens
+  * Special legal concepts unique to this fictional world
+- Format as multiple clear paragraphs with clear logical structure
+- Use specific examples and terminology appropriate to the world's technology level
 
-YOUR RESPONSE SHOULD BE WELL-STRUCTURED AND FOCUS ON CREATING A FOUNDATION FOR STORYTELLING.
+DO NOT BE BRIEF. PROVIDE A SUBSTANTIAL, DETAILED RESPONSE THAT GIVES THE WRITER ENOUGH MATERIAL TO BUILD UPON.
 `;
 }
 
