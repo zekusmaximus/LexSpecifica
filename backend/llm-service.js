@@ -43,6 +43,43 @@ async function generateLegalFramework(worldConcept, parameters = {}) {
   }
 }
 
+// Function to generate policies only
+async function generatePolicies(worldConcept, parameters = {}) {
+  try {
+    // Extract parameters with defaults
+    const {
+      techLevel = 5,
+      governmentType = 'unspecified',
+      worldElements = [],
+      citizenRights = []
+    } = parameters;
+    
+    // Construct the policies prompt
+    const policiesPrompt = constructPrompt('policies', {
+      worldConcept,
+      techLevel,
+      governmentType,
+      worldElements,
+      citizenRights
+    });
+    
+    // Generate policies content
+    const policiesResponse = await generateFromHuggingFace(policiesPrompt, {
+      max_tokens: 1000,  // Increased from 250 to get fuller descriptions
+      temperature: 0.7   // Slightly increased for more creative variety
+    });
+    
+    // Process the response
+    const policies = processPolicies(policiesResponse);
+    
+    // Return the generated content
+    return { policies };
+  } catch (error) {
+    console.error('Error generating policies:', error);
+    throw new Error('Failed to generate policies');
+  }
+}
+
 // Template for generating just the policies
 function policiesTemplate(baseContext) {
   return `${baseContext}
