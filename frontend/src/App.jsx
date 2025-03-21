@@ -12,6 +12,7 @@ function App() {
   const [policies, setPolicies] = useState(null);
   const [conflicts, setConflicts] = useState(null);
   const [activeTab, setActiveTab] = useState('input');
+  const [expandedPolicies, setExpandedPolicies] = useState({});
   
   const handleGenerateFramework = async () => {
     if (!worldConcept) return;
@@ -134,6 +135,14 @@ function App() {
         ]
       };
       
+// Add this function here
+const togglePolicy = (index) => {
+  setExpandedPolicies(prev => ({
+    ...prev,
+    [index]: !prev[index]
+  }));
+};
+
       setConflicts(result.conflicts);
     } catch (error) {
       console.error("Error generating conflicts:", error);
@@ -445,25 +454,63 @@ function App() {
                   </button>
                 </div>
                 
-                {/* Policies Section (Conditionally Displayed) */}
-                {policies && (
-                  <div style={{ marginBottom: '24px' }}>
-                    <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '12px', color: '#2c3e50', borderBottom: '2px solid #3b82f6', paddingBottom: '8px' }}>Key Policies</h3>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      {policies.map((policy, index) => (
-                        <div key={index} style={{ 
-                          padding: '12px 16px', 
-                          backgroundColor: '#f0f4f8', 
-                          borderRadius: '6px',
-                          borderLeft: '3px solid #3b82f6'
-                        }}>
-                          <div style={{ fontWeight: 'bold', marginBottom: '4px', fontSize: '16px' }}>{policy.name}</div>
-                          <div style={{ fontSize: '14px' }}>{policy.description}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                {/* Policies Section with Expandable Cards */}
+{policies && (
+  <div style={{ marginBottom: '24px' }}>
+    <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '12px', color: '#2c3e50', borderBottom: '2px solid #3b82f6', paddingBottom: '8px' }}>Key Policies</h3>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      {policies.map((policy, index) => (
+        <div 
+          key={index} 
+          style={{ 
+            padding: '16px', 
+            backgroundColor: '#f0f4f8', 
+            borderRadius: '6px',
+            borderLeft: '3px solid #3b82f6',
+            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease'
+          }}
+          onClick={() => togglePolicy(index)}
+        >
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}>
+            <div style={{ 
+              fontWeight: 'bold', 
+              fontSize: '16px',
+              color: '#2c5282'
+            }}>
+              {policy.name}
+            </div>
+            <div>
+              {expandedPolicies[index] ? '▲' : '▼'}
+            </div>
+          </div>
+          
+          {expandedPolicies[index] && (
+            <div style={{ 
+              fontSize: '15px',
+              lineHeight: '1.6',
+              marginTop: '12px',
+              paddingTop: '12px',
+              borderTop: '1px solid #ccc'
+            }}>
+              {policy.description}
+              
+              {/* You could add more details about the policy here */}
+              <div style={{ marginTop: '8px', fontStyle: 'italic', color: '#666' }}>
+                This policy affects all citizens and is enforced by the legal authorities.
+              </div>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  </div>
+)}
                 
                 {/* Conflicts Section (Conditionally Displayed) */}
                 {conflicts && (

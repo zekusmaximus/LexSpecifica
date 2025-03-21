@@ -40,18 +40,22 @@ GUIDELINES:
   }
 }
 
-// Template for generating only the legal framework
+// Template for generating a more in-depth legal framework
 function legalFrameworkTemplate(baseContext) {
   return `${baseContext}
 
-CREATE A BRIEF LEGAL FRAMEWORK OVERVIEW:
-- Describe how the legal system works in this world in 150-200 words
-- Include the structure of the legal system and how laws are created/enforced
-- Mention the basic rights and obligations of citizens
-- Explain how this system reflects unique aspects of the world
-- Format as 2-3 clear paragraphs
+CREATE A COMPREHENSIVE LEGAL FRAMEWORK OVERVIEW:
+- Describe the legal system of this world in 300-400 words
+- Include these key aspects:
+  * The fundamental structure of the legal system 
+  * How laws are created, enforced, and adjudicated
+  * Rights and obligations of citizens/inhabitants
+  * Relationship between branches of power
+  * Unique legal concepts specific to this world
+- Format as 3-5 clear paragraphs with logical structure
+- Use terminology appropriate to the world's technology level and culture
 
-YOUR RESPONSE MUST BE SELF-CONTAINED AND FOCUSED SOLELY ON THE LEGAL FRAMEWORK.
+YOUR RESPONSE SHOULD BE WELL-STRUCTURED AND FOCUS ON CREATING A FOUNDATION FOR STORYTELLING.
 `;
 }
 
