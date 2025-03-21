@@ -154,11 +154,11 @@ function App() {
         {/* Hero image would go here */}
         <div style={{ 
           width: '100%',
-          maxWidth: '600px',
-          height: '200px',
+          maxWidth: '700px',
+          height: '400px',
           backgroundColor: '#1a2a38',
           borderRadius: '8px',
-          marginBottom: '10px',
+          marginBottom: '20px',
           backgroundImage: `url(${heroImage})`,
           backgroundSize: 'contain',
           backgroundPosition: 'center',
@@ -166,9 +166,10 @@ function App() {
         }}>
           <div style={{ 
             backgroundColor: 'rgba(0,0,0,0.5)', 
-            padding: '10xp 15px', 
+            padding: '15xp 20px', 
             borderRadius: '5px',
-            maxWidth: '600px',
+            maxWidth: '700px',
+            width: '100%',
             textAlign: 'center',
             marginBottom: '10px'
           }}>
