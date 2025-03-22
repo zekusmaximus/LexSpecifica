@@ -43,27 +43,6 @@ CREATIVE GUIDELINES:
   }
 }
 
-// Function to generate all document types in one comprehensive response
-function generateAllDocuments(baseContext) {
-  return `${baseContext}
-
-YOU WILL CREATE A COMPREHENSIVE LEGAL SYSTEM FOR THIS FICTIONAL WORLD, INCLUDING FRAMEWORK, POLICIES, AND CONFLICTS:
-
-IMPORTANT: Structure your response in three distinct sections as outlined below. Begin each section with the specified heading format and follow the detailed instructions for each section.
-
-===== SECTION 1: LEGAL FRAMEWORK =====
-
-${legalFrameworkTemplate(baseContext).split('YOU WILL CREATE AN IMMERSIVE LEGAL FRAMEWORK FOR THIS FICTIONAL WORLD:')[1]}
-
-===== SECTION 2: KEY POLICIES =====
-
-${policiesTemplate(baseContext).split('YOU WILL CREATE 5 DISTINCT AND DETAILED POLICIES FOR THIS FICTIONAL WORLD:')[1]}
-
-===== SECTION 3: NARRATIVE CONFLICTS =====
-
-${conflictsTemplate(baseContext).split('YOU WILL CREATE 3 NARRATIVE CONFLICTS BASED ON THIS LEGAL SYSTEM:')[1]}
-`;
-
 // Template for generating a more in-depth legal framework
 function legalFrameworkTemplate(baseContext) {
   return `${baseContext}
@@ -224,6 +203,28 @@ ENSURE THAT:
 - At least one conflict involves a moral gray area where both sides have legitimate claims
 - Each conflict reveals something distinctive about how law functions in this society
 - Conflicts suggest potential for character development and plot advancement
+`;
+}
+
+// Function to generate all document types in one comprehensive response
+function generateAllDocuments(baseContext) {
+  return `${baseContext}
+
+YOU WILL CREATE A COMPREHENSIVE LEGAL SYSTEM FOR THIS FICTIONAL WORLD, INCLUDING FRAMEWORK, POLICIES, AND CONFLICTS:
+
+IMPORTANT: Structure your response in three distinct sections as outlined below. Begin each section with the specified heading format and follow the detailed instructions for each section.
+
+===== SECTION 1: LEGAL FRAMEWORK =====
+
+${legalFrameworkTemplate(baseContext).split('YOU WILL CREATE AN IMMERSIVE LEGAL FRAMEWORK FOR THIS FICTIONAL WORLD:')[1]}
+
+===== SECTION 2: KEY POLICIES =====
+
+${policiesTemplate(baseContext).split('YOU WILL CREATE 5 DISTINCT AND DETAILED POLICIES FOR THIS FICTIONAL WORLD:')[1]}
+
+===== SECTION 3: NARRATIVE CONFLICTS =====
+
+${conflictsTemplate(baseContext).split('YOU WILL CREATE 3 NARRATIVE CONFLICTS BASED ON THIS LEGAL SYSTEM:')[1]}
 `;
 }
 
