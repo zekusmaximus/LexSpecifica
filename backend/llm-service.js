@@ -2,14 +2,19 @@
 const { constructPrompt } = require('./prompt-templates');
 const axios = require('axios');
 
-// Get API key from environment variable set in Fly.io secrets
-const API_KEY = process.env.HUGGINGFACE_API_KEY;
-const API_ENDPOINT = process.env.HUGGINGFACE_API_ENDPOINT || 'https://api-inference.huggingface.co/models/mistralai/Mixtral-8x7B-Instruct-v0.1';
+// Get API key from environment variable with the CORRECT name
+const HF_API_KEY = process.env.HF_API_KEY;
+const API_ENDPOINT = process.env.HF_API_ENDPOINT || 'https://api-inference.huggingface.co/models/mistralai/Mixtral-8x7B-Instruct-v0.1';
 
 // Main function to call the Mixtral model via HuggingFace
 async function callMixtralModel(prompt) {
   try {
     console.log(`Calling HuggingFace API with prompt length: ${prompt.length} characters`);
+    
+    if (!HF_API_KEY) {
+      console.error('HF_API_KEY environment variable is not set!');
+      throw new Error('HuggingFace API key not configured');
+    }
     
     // Configuration for HuggingFace Inference API
     const response = await axios.post(API_ENDPOINT, {
@@ -24,7 +29,7 @@ async function callMixtralModel(prompt) {
     }, {
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${API_KEY}`
+        'Authorization': `Bearer ${HF_API_KEY}`
       }
     });
 
@@ -54,7 +59,7 @@ async function callMixtralModel(prompt) {
     if (error.response?.status === 503) {
       throw new Error('The model is currently loading. Please try again in a moment.');
     } else if (error.response?.status === 401) {
-      throw new Error('API key authentication failed. Please check your HUGGINGFACE_API_KEY.');
+      throw new Error('API key authentication failed. Please check your HF_API_KEY.');
     }
     
     throw new Error(`Failed to get response from LLM: ${error.message}`);
