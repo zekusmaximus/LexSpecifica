@@ -100,33 +100,51 @@ function App() {
     }
   };
   
-  const handleGenerateConflicts = async () => {
-    if (!worldConcept) return;
+  // In App.jsx, update the handleGenerateConflicts function
+const handleGenerateConflicts = async () => {
+  if (!worldConcept) return;
+  
+  setIsGeneratingConflicts(true);
+  
+  try {
+    const response = await fetch('/api/generate/conflicts', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        worldConcept,
+        parameters: {
+          techLevel,
+          governmentType
+        }
+      }),
+    });
     
-    setIsGeneratingConflicts(true);
-    
-    try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Mock response data
-      const result = {
-        conflicts: [
-          "A lower-council representative discovers evidence that the upper council is secretly hoarding resources, but revealing this would violate the sacred privacy laws. They must decide whether to become a whistleblower and risk execution or remain complicit in the injustice affecting their community.",
-          
-          "Two citizens from different social castes fall in love, but the Citizenship Classification Act forbids their union. When they attempt to elope to the ungoverned territories, they become entangled in a landmark legal case that challenges the foundations of the social hierarchy.",
-          
-          "A guardian responsible for law enforcement develops a technology that can predict crimes before they occur, but implementing it would violate the right to privacy of thought. The resulting debate divides society between those prioritizing security and those defending fundamental rights."
-        ]
-      };
-      
-      setConflicts(result.conflicts);
-    } catch (error) {
-      console.error("Error generating conflicts:", error);
-    } finally {
-      setIsGeneratingConflicts(false);
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || `HTTP error ${response.status}`);
     }
-  };
+    
+    const result = await response.json();
+    console.log("Conflicts response:", result);
+    
+    if (result.conflicts && Array.isArray(result.conflicts)) {
+      setConflicts(result.conflicts);
+    } else {
+      console.error("Unexpected conflicts format:", result);
+      throw new Error("Invalid response format");
+    }
+  } catch (error) {
+    console.error("Error generating conflicts:", error);
+    // Show error to user
+    setConflicts([
+      "Error: Failed to generate conflicts. " + error.message
+    ]);
+  } finally {
+    setIsGeneratingConflicts(false);
+  }
+};
   
   // Move the function HERE - outside of handleGenerateConflicts
   const togglePolicy = (index) => {
