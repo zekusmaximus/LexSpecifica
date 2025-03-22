@@ -21,29 +21,28 @@ function App() {
     setIsGenerating(true);
     
     try {
-      // In a production environment, this would call the API
-      // const response = await fetch('/api/generate/framework', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify({
-      //     worldConcept,
-      //     parameters: {
-      //       techLevel,
-      //       governmentType
-      //     }
-      //   }),
-      // });
-      // const result = await response.json();
+      // Use the actual API call instead of mock data
+      const response = await fetch('/api/generate/framework', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          worldConcept,
+          parameters: {
+            techLevel,
+            governmentType
+          }
+        }),
+      });
       
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error ${response.status}`);
+      }
       
-      // Mock response data
-      const result = {
-        legalFramework: `This legal framework for ${worldConcept} with a technology level of ${techLevel} and a ${governmentType || 'unspecified'} government type is based on a system of hierarchical councils. Laws are created through consensus of the upper councils and enforced by specialized guardians who use both traditional and technological means depending on the severity of the infraction. Citizens have the right to petition, the right to basic resources, and the right to privacy of thought, though these rights vary by social standing.`
-      };
+      const result = await response.json();
+      console.log("Framework response:", result);
       
       setLegalFramework(result.legalFramework);
       // Clear any previous policies and conflicts
@@ -51,6 +50,8 @@ function App() {
       setConflicts(null);
     } catch (error) {
       console.error("Error generating framework:", error);
+      // Show error to user (optional)
+      setLegalFramework("Error: Failed to generate legal framework. " + error.message);
     } finally {
       setIsGenerating(false);
     }
@@ -62,39 +63,42 @@ function App() {
     setIsGeneratingPolicies(true);
     
     try {
-      // In a production environment, this would call the API
-      // const response = await fetch('/api/generate/policies', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify({
-      //     worldConcept,
-      //     parameters: {
-      //       techLevel,
-      //       governmentType
-      //     }
-      //   }),
-      // });
-      // const result = await response.json();
+      // Use the actual API call instead of mock data
+      const response = await fetch('/api/generate/policies', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          worldConcept,
+          parameters: {
+            techLevel,
+            governmentType
+          }
+        }),
+      });
       
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error ${response.status}`);
+      }
       
-      // Mock response data
-      const result = {
-        policies: [
-          { name: "Universal Rights Protocol", description: "Establishes the baseline rights for all citizens regardless of social standing." },
-          { name: "Resource Allocation Directive", description: "Governs the distribution of limited resources based on need and contribution." },
-          { name: "Citizenship Classification Act", description: "Defines different categories of citizenship and their associated privileges." },
-          { name: "Intergroup Conflict Resolution Statute", description: "Establishes procedures for resolving disputes between different social groups." },
-          { name: "Authority Transfer Procedure", description: "Regulates the process of transferring power between leadership councils." }
-        ]
-      };
+      const result = await response.json();
+      console.log("Policies response:", result);
       
-      setPolicies(result.policies);
+      if (result.policies && Array.isArray(result.policies)) {
+        setPolicies(result.policies);
+      } else {
+        console.error("Unexpected policies format:", result);
+        throw new Error("Invalid response format for policies");
+      }
     } catch (error) {
       console.error("Error generating policies:", error);
+      // Show error to user (optional)
+      setPolicies([{
+        name: "Error", 
+        description: "Failed to generate policies: " + error.message
+      }]);
     } finally {
       setIsGeneratingPolicies(false);
     }
