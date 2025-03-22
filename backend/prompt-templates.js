@@ -68,6 +68,8 @@ Your description should feel like an excerpt from a detailed worldbuilding guide
 DO NOT USE PLACEHOLDER TEXT OR GENERIC DESCRIPTIONS. CREATE SPECIFIC, DISTINCTIVE LEGAL ELEMENTS THAT REFLECT THE UNIQUE NATURE OF THIS WORLD.
 
 IMPORTANT: Begin immediately with the content. Do NOT start with phrases like "This legal framework for [world concept]..." or any other meta-references to the prompt.
+
+FORMAT YOUR RESPONSE IN PLAIN TEXT WITH CLEAR PARAGRAPH BREAKS. Do not use any special formatting, numbering, or markdown.
 `;
 }
 

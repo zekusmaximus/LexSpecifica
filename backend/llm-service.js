@@ -211,37 +211,71 @@ function parsePoliciesFromText(text) {
   }
 }
 
-// Helper function to parse conflicts from text
-function parseConflictsFromText(text) {
+// Helper function to parse policies from text
+function parsePoliciesFromText(text) {
   try {
-    console.log('Parsing conflicts from text of length:', text.length);
+    console.log('Parsing policies from text of length:', text.length);
     
-    // Split by conflict delimiter and filter out empty sections
-    const conflictBlocks = text.split('-------------------------------------------')
-      .filter(block => block.trim().length > 0);
+    // Look for policy blocks - matches patterns like "===POLICY 1===" or "POLICY 1:" or just numbered policies
+    const policyRegex = /(?:===POLICY \d+===|POLICY \d+:|^\d+\.)\s*(NAME:\s*([^\n]+))?\s*(DESCRIPTION:\s*)?([^]*?)(?=(?:===POLICY \d+===|POLICY \d+:|\n\d+\.|$))/gmi;
     
-    console.log(`Found ${conflictBlocks.length} conflict blocks`);
+    const policies = [];
+    let match;
     
-    return conflictBlocks.map(block => {
-      // Extract the conflict title
-      const titleMatch = block.match(/## CONFLICT .*?: (.*?)$/im);
-      const title = titleMatch ? titleMatch[1].trim() : '';
+    while ((match = policyRegex.exec(text)) !== null) {
+      // Get the policy name and description
+      let name = match[2]?.trim();
+      let description = match[4]?.trim();
       
-      // Remove the title line and return just the conflict paragraph
-      const cleanedText = block.replace(/## CONFLICT .*?: .*/i, '').trim();
-      
-      // If we found a title, return an object with title and text
-      if (title) {
-        return { title, text: cleanedText };
+      // If no structured name found, try to extract from first line
+      if (!name && description) {
+        const firstLineMatch = description.match(/^([^:.\n]+)[:.]/);
+        if (firstLineMatch) {
+          name = firstLineMatch[1].trim();
+          description = description.substring(firstLineMatch[0].length).trim();
+        } else {
+          // Just take the first line as the name
+          const lines = description.split('\n');
+          name = lines[0].trim();
+          description = lines.slice(1).join('\n').trim();
+        }
       }
       
-      // Otherwise just return the text
-      return cleanedText;
-    });
+      // Fallback if we still don't have a name
+      if (!name) name = 'Policy';
+      if (!description) description = 'No details provided';
+      
+      policies.push({ name, description });
+    }
+    
+    // If no policies found with the regex, try a simpler approach
+    if (policies.length === 0) {
+      const simpleBlocks = text.split(/\n\s*\n/).filter(block => block.trim().length > 0);
+      
+      simpleBlocks.forEach(block => {
+        const lines = block.split('\n');
+        const name = lines[0].replace(/^[^a-z0-9]*/i, '').trim();
+        const description = lines.slice(1).join('\n').trim();
+        
+        if (name) {
+          policies.push({ name, description: description || 'No details provided' });
+        }
+      });
+    }
+    
+    console.log(`Extracted ${policies.length} policies`);
+    
+    // If we still have no policies, return an error
+    if (policies.length === 0) {
+      console.error('Failed to extract policies from text. Raw text:', text);
+      return [{ name: 'Policy', description: 'The response format was unexpected. Please try again or modify the prompt.' }];
+    }
+    
+    return policies;
   } catch (error) {
-    console.error('Error parsing conflicts:', error);
+    console.error('Error parsing policies:', error);
     // Return a fallback in case of parsing error
-    return ['Error parsing conflicts. The response format was unexpected: ' + error.message];
+    return [{ name: 'Error parsing policies', description: 'The response format was unexpected: ' + error.message }];
   }
 }
 

@@ -391,8 +391,10 @@ const handleGenerateConflicts = async () => {
               
               <div style={{ padding: '20px' }}>
                 <div style={{ marginBottom: '24px', backgroundColor: '#f8f9fa', padding: '16px', borderRadius: '6px' }}>
-                  <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '12px', color: '#2c3e50', borderBottom: '2px solid #3b82f6', paddingBottom: '8px' }}>Legal Foundation</h3>
-                  <p style={{ lineHeight: '1.6' }}>{legalFramework}</p>
+                  <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '12px', color: '#2c3e50', borderBottom: '2px solid #3b82f6', paddingBottom: '8px' }}>Legal Framework</h3>
+                  <div style={{ lineHeight: '1.6', whiteSpace: 'pre-wrap', textAlign: 'left' }}>
+                    {legalFramework}
+                  </div>
                 </div>
                 
                 {/* Action buttons for policies and conflicts */}
@@ -461,84 +463,110 @@ const handleGenerateConflicts = async () => {
                 </div>
                 
                 {/* Policies Section with Expandable Cards */}
-{policies && (
-  <div style={{ marginBottom: '24px' }}>
-    <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '12px', color: '#2c3e50', borderBottom: '2px solid #3b82f6', paddingBottom: '8px' }}>Key Policies</h3>
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-      {policies.map((policy, index) => (
-        <div 
-          key={index} 
-          style={{ 
-            padding: '16px', 
-            backgroundColor: '#f0f4f8', 
-            borderRadius: '6px',
-            borderLeft: '3px solid #3b82f6',
-            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease'
-          }}
-          onClick={() => togglePolicy(index)}
-        >
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center'
-          }}>
-            <div style={{ 
-              fontWeight: 'bold', 
-              fontSize: '16px',
-              color: '#2c5282'
-            }}>
-              {policy.name}
-            </div>
-            <div>
-              {expandedPolicies[index] ? '▲' : '▼'}
-            </div>
-          </div>
-          
-          {expandedPolicies[index] && (
-            <div style={{ 
-              fontSize: '15px',
-              lineHeight: '1.6',
-              marginTop: '12px',
-              paddingTop: '12px',
-              borderTop: '1px solid #ccc'
-            }}>
-              {policy.description}
-              
-              {/* You could add more details about the policy here */}
-              <div style={{ marginTop: '8px', fontStyle: 'italic', color: '#666' }}>
-                This policy affects all citizens and is enforced by the legal authorities.
-              </div>
-            </div>
-          )}
-        </div>
-      ))}
-    </div>
-  </div>
-)}
+                {policies && (
+                  <div style={{ marginBottom: '24px' }}>
+                    <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '12px', color: '#2c3e50', borderBottom: '2px solid #3b82f6', paddingBottom: '8px' }}>Key Policies</h3>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      {policies.map((policy, index) => (
+                        <div 
+                          key={index} 
+                          style={{ 
+                            padding: '16px', 
+                            backgroundColor: '#f0f4f8', 
+                            borderRadius: '6px',
+                            borderLeft: '3px solid #3b82f6',
+                            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease'
+                          }}
+                          onClick={() => togglePolicy(index)}
+                        >
+                          <div style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                          }}>
+                            <div style={{ 
+                              fontWeight: 'bold', 
+                              fontSize: '16px',
+                              color: '#2c5282',
+                              textAlign: 'left'
+                            }}>
+                              {policy.name}
+                            </div>
+                            <div>
+                              {expandedPolicies[index] ? '▲' : '▼'}
+                            </div>
+                          </div>
+                          
+                          {expandedPolicies[index] && (
+                            <div style={{ 
+                              fontSize: '15px',
+                              lineHeight: '1.6',
+                              marginTop: '12px',
+                              paddingTop: '12px',
+                              borderTop: '1px solid #ccc',
+                              textAlign: 'left',
+                              whiteSpace: 'pre-wrap'
+                            }}>
+                              {policy.description}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 
                 {/* Conflicts Section (Conditionally Displayed) */}
                 {conflicts && (
                   <div style={{ marginBottom: '24px' }}>
                     <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '12px', color: '#2c3e50', borderBottom: '2px solid #e53e3e', paddingBottom: '8px' }}>Story Conflicts</h3>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                      {conflicts.map((conflict, index) => (
-                        <div key={index} style={{ 
-                          padding: '16px', 
-                          backgroundColor: '#fff8f0', 
-                          borderRadius: '6px',
-                          borderLeft: '3px solid #ed8936',
-                          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)'
-                        }}>
-                          <div style={{ 
-                            fontSize: '15px',
-                            lineHeight: '1.6'
+                      {conflicts.map((conflict, index) => {
+                        let conflictTitle = `Conflict ${index + 1}`;
+                        let conflictText = conflict;
+                        
+                        // If conflict is an object with title and text
+                        if (typeof conflict === 'object' && conflict.title && conflict.text) {
+                          conflictTitle = conflict.title;
+                          conflictText = conflict.text;
+                        } else if (typeof conflict === 'string') {
+                          // Try to extract title from format "Conflict N: Title"
+                          const titleMatch = conflict.match(/^CONFLICT\s*\d+\s*:\s*(.*?)$/im);
+                          if (titleMatch) {
+                            conflictTitle = titleMatch[1].trim();
+                            conflictText = conflict.replace(/^CONFLICT\s*\d+\s*:\s*(.*?)$/im, '').trim();
+                          }
+                        }
+                        
+                        return (
+                          <div key={index} style={{ 
+                            padding: '16px', 
+                            backgroundColor: '#fff8f0', 
+                            borderRadius: '6px',
+                            borderLeft: '3px solid #ed8936',
+                            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)'
                           }}>
-                            {conflict}
+                            <div style={{
+                              fontWeight: 'bold',
+                              fontSize: '16px',
+                              marginBottom: '8px',
+                              color: '#c05621',
+                              textAlign: 'left'
+                            }}>
+                              {conflictTitle}
+                            </div>
+                            <div style={{ 
+                              fontSize: '15px',
+                              lineHeight: '1.6',
+                              textAlign: 'left'
+                            }}>
+                              {conflictText}
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 )}
