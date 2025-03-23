@@ -84,8 +84,17 @@ async function generateLegalFramework(worldConcept, parameters = {}) {
     // Call the LLM with the prompt
     const response = await callMixtralModel(prompt);
     
+    // Check if the response is just empty or filled with newlines
+    const cleanText = response.text.replace(/\n/g, '').trim();
+    if (!cleanText) {
+      console.log('Received empty framework response, returning fallback');
+      return { 
+        legalFramework: "The framework generator was unable to create a response. This might be due to temporary issues with the language model. Please try again or modify your world concept."
+      };
+    }
+    
     // Return the results
-    return { legalFramework: response.text };
+    return { legalFramework: response.text.trim() };
   } catch (error) {
     console.error('Error generating legal framework:', error);
     throw error;
@@ -110,14 +119,54 @@ async function generatePolicies(worldConcept, parameters = {}) {
     // Call the LLM with the prompt
     const response = await callMixtralModel(prompt);
     
-    // Parse the policies from the response
-    const policies = parsePoliciesFromText(response.text);
+    // Check if the response is just empty or filled with newlines
+    const cleanText = response.text.replace(/\n/g, '').trim();
+    if (!cleanText) {
+      console.log('Received empty policies response, returning fallback');
+      return { 
+        policies: [
+          {
+            name: "Policy Generation Failed",
+            description: "The system was unable to generate policies based on your world concept. Please try again or provide more details about your world's social structures, resources, or governance."
+          }
+        ]
+      };
+    }
     
-    // Return the results
-    return { policies };
+    // Parse the policies from the response
+    try {
+      const policies = parsePoliciesFromText(response.text);
+      
+      // If no policies were found or parsing failed, return a fallback
+      if (!policies || policies.length === 0) {
+        throw new Error("No policies found in response");
+      }
+      
+      // Return the results
+      return { policies };
+    } catch (parsingError) {
+      console.error('Error parsing policies:', parsingError);
+      // Return raw text as a single policy if parsing fails
+      return { 
+        policies: [
+          {
+            name: "Raw Policy Data",
+            description: response.text.trim()
+          }
+        ]
+      };
+    }
   } catch (error) {
     console.error('Error generating policies:', error);
-    throw error;
+    // Return a fallback instead of throwing - prevents 500 error
+    return { 
+      policies: [
+        {
+          name: "Error Generating Policies",
+          description: "The system encountered an error while generating policies. Please try again with a more detailed world description or different government type."
+        }
+      ]
+    };
   }
 }
 
@@ -139,14 +188,44 @@ async function generateConflicts(worldConcept, parameters = {}) {
     // Call the LLM with the prompt
     const response = await callMixtralModel(prompt);
     
-    // Parse the conflicts from the response
-    const conflicts = parseConflictsFromText(response.text);
+    // Check if the response is just empty or filled with newlines
+    const cleanText = response.text.replace(/\n/g, '').trim();
+    if (!cleanText) {
+      console.log('Received empty conflicts response, returning fallback');
+      return { 
+        conflicts: [
+          "The model was unable to generate conflicts. Please try again or modify your world concept.",
+          "Consider making your world description more detailed or specifying more about the society's values and tensions.",
+          "You can also try manually describing potential conflicts based on the generated legal framework."
+        ]
+      };
+    }
     
-    // Return the results
-    return { conflicts };
+    // Parse the conflicts from the response
+    try {
+      const conflicts = parseConflictsFromText(response.text);
+      
+      // Return the results
+      return { conflicts };
+    } catch (parsingError) {
+      console.error('Error parsing conflicts:', parsingError);
+      // Return raw text as a single conflict if parsing fails
+      return { 
+        conflicts: [
+          "CONFLICT 1: " + response.text.trim()
+        ]
+      };
+    }
   } catch (error) {
     console.error('Error generating conflicts:', error);
-    throw error;
+    // Return a fallback instead of throwing - prevents 500 error
+    return { 
+      conflicts: [
+        "The system encountered an error while generating conflicts. Please try again.",
+        "You might try providing more detail about your world's social tensions or power structures.",
+        "Alternatively, consider creating conflicts manually based on the legal framework."
+      ]
+    };
   }
 }
 
@@ -180,34 +259,6 @@ async function generateDocument(type, worldConcept, parameters = {}) {
   } catch (error) {
     console.error(`Error generating ${type} document:`, error);
     throw error;
-  }
-}
-
-// Helper function to parse policies from text
-function parsePoliciesFromText(text) {
-  try {
-    console.log('Parsing policies from text of length:', text.length);
-    
-    // Split by policy delimiter and filter out empty sections
-    const policyBlocks = text.split('-------------------------------------------')
-      .filter(block => block.trim().length > 0);
-    
-    console.log(`Found ${policyBlocks.length} policy blocks`);
-    
-    return policyBlocks.map(block => {
-      // Extract the policy name from the heading
-      const nameMatch = block.match(/## \[(.*?)\]/);
-      const name = nameMatch ? nameMatch[1] : 'Unknown Policy';
-      
-      // Extract the description - everything after the name
-      const description = block.replace(/## \[.*?\]/, '').trim();
-      
-      return { name, description };
-    });
-  } catch (error) {
-    console.error('Error parsing policies:', error);
-    // Return a fallback in case of parsing error
-    return [{ name: 'Error parsing policies', description: 'The response format was unexpected: ' + error.message }];
   }
 }
 

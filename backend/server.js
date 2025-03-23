@@ -180,7 +180,37 @@ app.get('*', (req, res) => {
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Server error:', err);
-  res.status(500).json({ error: 'Internal server error' });
+  
+  // If the error is related to the LLM API call
+  if (err.message && (
+    err.message.includes('API') || 
+    err.message.includes('model') || 
+    err.message.includes('HuggingFace') ||
+    err.message.includes('language model')
+  )) {
+    return res.status(503).json({ 
+      error: 'The AI service is currently unavailable. Please try again in a moment.',
+      details: err.message
+    });
+  }
+  
+  // If the error is related to invalid input
+  if (err.message && (
+    err.message.includes('invalid') || 
+    err.message.includes('required') ||
+    err.message.includes('missing')
+  )) {
+    return res.status(400).json({ 
+      error: 'Invalid input provided.',
+      details: err.message
+    });
+  }
+  
+  // Generic server error
+  res.status(500).json({ 
+    error: 'Internal server error. Please try again or contact support if the issue persists.',
+    requestId: `req-${Date.now().toString(36)}`
+  });
 });
 
 // Start server
