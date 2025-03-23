@@ -104,7 +104,8 @@ function App() {
     }
   };
   
-  // In App.jsx, update the handleGenerateConflicts function
+
+// Replace your current handleGenerateConflicts function with this one
 const handleGenerateConflicts = async () => {
   if (!worldConcept) return;
   
@@ -134,7 +135,53 @@ const handleGenerateConflicts = async () => {
     console.log("Conflicts response:", result);
     
     if (result.conflicts && Array.isArray(result.conflicts)) {
-      setConflicts(result.conflicts);
+      // Process the conflicts to ensure proper formatting
+      const processedConflicts = [];
+      
+      for (let i = 0; i < result.conflicts.length; i++) {
+        const conflict = result.conflicts[i];
+        
+        // If it's a simple string
+        if (typeof conflict === 'string') {
+          // Check if this conflict contains multiple conflicts (this happens sometimes)
+          if (conflict.includes('CONFLICT 2:') || conflict.includes('CONFLICT 3:')) {
+            // Split by "CONFLICT N:" pattern
+            const parts = conflict.split(/CONFLICT\s+\d+\s*:/i);
+            // First part might be empty or contain "CONFLICT 1:"
+            for (let j = 0; j < parts.length; j++) {
+              if (parts[j].trim()) {
+                processedConflicts.push({
+                  title: `Conflict ${processedConflicts.length + 1}`,
+                  text: parts[j].trim()
+                });
+              }
+            }
+          } else {
+            // Try to extract conflict title if it's in the format "CONFLICT N: Text"
+            const titleMatch = conflict.match(/^CONFLICT\s*(\d+)\s*:\s*(.*?)$/im);
+            if (titleMatch) {
+              processedConflicts.push({
+                title: `Conflict ${titleMatch[1]}`,
+                text: conflict.replace(/^CONFLICT\s*\d+\s*:\s*/im, '').trim()
+              });
+            } else {
+              // No pattern matched, just use as is
+              processedConflicts.push({
+                title: `Conflict ${processedConflicts.length + 1}`,
+                text: conflict.trim()
+              });
+            }
+          }
+        } else if (typeof conflict === 'object' && conflict !== null) {
+          // It's already an object, just make sure it has title and text properties
+          processedConflicts.push({
+            title: conflict.title || `Conflict ${processedConflicts.length + 1}`,
+            text: conflict.text || JSON.stringify(conflict)
+          });
+        }
+      }
+      
+      setConflicts(processedConflicts);
     } else {
       console.error("Unexpected conflicts format:", result);
       throw new Error("Invalid response format");
@@ -143,13 +190,64 @@ const handleGenerateConflicts = async () => {
     console.error("Error generating conflicts:", error);
     // Show error to user
     setConflicts([
-      "Error: Failed to generate conflicts. " + error.message
+      {
+        title: "Error",
+        text: "Failed to generate conflicts. " + error.message
+      }
     ]);
   } finally {
     setIsGeneratingConflicts(false);
   }
 };
   
+// Add this new component to your App.jsx file, before the main App component
+const ConflictsSection = ({ conflicts }) => {
+  if (!conflicts || conflicts.length === 0) return null;
+  
+  return (
+    <div style={{ marginBottom: '24px' }}>
+      <h3 style={{ 
+        fontSize: '18px', 
+        fontWeight: 'bold', 
+        marginBottom: '12px', 
+        color: '#2c3e50', 
+        borderBottom: '2px solid #e53e3e', 
+        paddingBottom: '8px' 
+      }}>
+        Story Conflicts
+      </h3>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        {conflicts.map((conflict, index) => (
+          <div key={index} style={{ 
+            padding: '16px', 
+            backgroundColor: '#fff8f0', 
+            borderRadius: '6px',
+            borderLeft: '3px solid #ed8936',
+            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)'
+          }}>
+            <div style={{
+              fontWeight: 'bold',
+              fontSize: '16px',
+              marginBottom: '8px',
+              color: '#c05621',
+              textAlign: 'left'
+            }}>
+              {conflict.title || `Conflict ${index + 1}`}
+            </div>
+            <div style={{ 
+              fontSize: '15px',
+              lineHeight: '1.6',
+              textAlign: 'left'
+            }}>
+              {conflict.text || conflict}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
   // Move the function HERE - outside of handleGenerateConflicts
   const togglePolicy = (index) => {
     setExpandedPolicies(prev => ({
@@ -615,58 +713,8 @@ const handleGenerateConflicts = async () => {
                   </div>
                 )}
                 
-                // Updated Conflicts Section with Consistent Styling
-{conflicts && (
-  <div style={{ marginBottom: '24px' }}>
-    <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '12px', color: '#2c3e50', borderBottom: '2px solid #e53e3e', paddingBottom: '8px' }}>Story Conflicts</h3>
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      {conflicts.map((conflict, index) => {
-        let conflictTitle = `Conflict ${index + 1}`;
-        let conflictText = conflict;
-        
-        // If conflict is an object with title and text
-        if (typeof conflict === 'object' && conflict.title && conflict.text) {
-          conflictTitle = conflict.title;
-          conflictText = conflict.text;
-        } else if (typeof conflict === 'string') {
-          // Try to extract title from format "Conflict N: Title"
-          const titleMatch = conflict.match(/^CONFLICT\s*\d+\s*:\s*(.*?)$/im);
-          if (titleMatch) {
-            conflictTitle = titleMatch[1].trim();
-            conflictText = conflict.replace(/^CONFLICT\s*\d+\s*:\s*(.*?)$/im, '').trim();
-          }
-        }
-        
-        return (
-          <div key={index} style={{ 
-            padding: '16px', 
-            backgroundColor: '#fff8f0', 
-            borderRadius: '6px',
-            borderLeft: '3px solid #ed8936',
-            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)'
-          }}>
-            <div style={{
-              fontWeight: 'bold',
-              fontSize: '16px',
-              marginBottom: '8px',
-              color: '#c05621',
-              textAlign: 'left'
-            }}>
-              {conflictTitle}
-            </div>
-            <div style={{ 
-              fontSize: '15px',
-              lineHeight: '1.6',
-              textAlign: 'left'
-            }}>
-              {conflictText}
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  </div>
-)}
+                
+                {conflicts && <ConflictsSection conflicts={conflicts} />}
                 
                 <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'center', gap: '12px' }}>
                   <button
