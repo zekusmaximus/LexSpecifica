@@ -384,7 +384,7 @@ const ConflictsSection = ({ conflicts }) => {
         }}></div>
           <div style={{ 
             backgroundColor: 'rgba(0,0,0,0.5)', 
-            padding: '15xp 20px', 
+            padding: '15px 20px', 
             borderRadius: '5px',
             maxWidth: '700px',
             width: '100%',
@@ -745,6 +745,7 @@ const ConflictsSection = ({ conflicts }) => {
                       borderRadius: '4px',
                       cursor: 'pointer' 
                     }}
+                    onClick={downloadFramework}
                   >
                     Save Framework
                   </button>
