@@ -37,11 +37,11 @@ function constructPrompt(templateType, parameters) {
   // Select the appropriate template based on the type
   switch (templateType) {
     case 'legal-framework':
-      return legalFrameworkTemplate(baseContext);
+  return legalFrameworkTemplate(baseContext, worldConcept);
     case 'policies':
-      return policiesTemplate(baseContext);
+      return policiesTemplate(baseContext, worldConcept);
     case 'conflicts':
-      return conflictsTemplate(baseContext);
+      return conflictsTemplate(baseContext, worldConcept);
      // Add a case for 'all' if you have a combined template
      // case 'all':
      //   return allDocumentTemplate(baseContext);
@@ -51,7 +51,7 @@ function constructPrompt(templateType, parameters) {
 }
 
 // Template for generating a more in-depth legal framework
-function legalFrameworkTemplate(baseContext) {
+function legalFrameworkTemplate(baseContext, worldConcept) {
   return `${baseContext}
 
 TASK: CREATE A DETAILED LEGAL FRAMEWORK OVERVIEW FOR THE "${worldConcept}" WORLD.
@@ -83,7 +83,7 @@ IMPORTANT: Begin immediately with the first section title and content. Do NOT in
 }
 
 // Template for generating just the policies
-function policiesTemplate(baseContext) {
+function policiesTemplate(baseContext, worldConcept) {
   return `${baseContext}
 
 TASK: CREATE 5 DETAILED AND UNIQUE POLICIES FOR THE "${worldConcept}" WORLD.
@@ -119,7 +119,7 @@ IMPORTANT:
 }
 
 // Template for generating just the conflicts
-function conflictsTemplate(baseContext) {
+function conflictsTemplate(baseContext, worldConcept) {
   return `${baseContext}
 
 TASK: CREATE 3 NARRATIVE CONFLICT SCENARIOS BASED ON THE LEGAL SYSTEM AND WORLD CONCEPT OF "${worldConcept}".
