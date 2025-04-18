@@ -1,32 +1,39 @@
-// prompt-templates.js - Updated templates for staged generation approach
+// prompt-templates.js - Optimized templates for Gemini 1.5-Flash
 
 // Main function to construct prompts based on template type and parameters
 function constructPrompt(templateType, parameters) {
-  const { 
-    worldConcept, 
-    techLevel = 5, 
-    governmentType = 'unspecified', 
+  const {
+    worldConcept,
+    techLevel = 5,
+    governmentType = 'unspecified',
     worldElements = [],
     citizenRights = []
+    // You could add more parameters here in the future, e.g., tone, target audience
   } = parameters;
-  
-  // Base context for all prompts
-  const baseContext = `
-You are an expert in speculative legal systems for fiction writers. Create focused content for "${worldConcept}".
 
-PARAMETERS:
+  // Base context for all prompts
+  // Explicitly instruct the model to use the parameters
+  const baseContext = `
+You are an expert in speculative legal systems for fiction writers, specifically focusing on worldbuilding details. Your task is to create content based on the following world concept and parameters.
+
+WORLD CONCEPT: "${worldConcept}"
+
+PARAMETERS TO INTEGRATE:
 - Technology Level: ${techLevel}/10 (1=primitive, 5=contemporary, 10=advanced)
 - Government Type: ${governmentType}
-${worldElements.length > 0 ? `- World Elements: ${worldElements.join(', ')}` : ''}
+${worldElements.length > 0 ? `- Key World Elements: ${worldElements.join(', ')}` : ''}
 ${citizenRights.length > 0 ? `- Citizen Rights Focus: ${citizenRights.join(', ')}` : ''}
 
-GUIDELINES:
-- Be creative but internally consistent
-- Use appropriate terminology for the technology level
-- Keep responses focused and concise
-- Create opportunities for narrative development
+GENERAL INSTRUCTIONS FOR ALL OUTPUTS:
+- Directly address the prompt's specific request for content.
+- Integrate the provided WORLD CONCEPT and PARAMETERS throughout your response.
+- Use terminology, concepts, and a tone appropriate for the specified Technology Level and Government Type.
+- Ensure internal consistency within the generated content.
+- Focus on creating details that inspire story ideas and narrative conflict.
+- Avoid generic or placeholder text.
+- Do NOT include any introductory phrases, conversational text, or meta-commentary about the prompt or your role. Begin immediately with the requested content formatted as specified.
 `;
-  
+
   // Select the appropriate template based on the type
   switch (templateType) {
     case 'legal-framework':
@@ -35,6 +42,9 @@ GUIDELINES:
       return policiesTemplate(baseContext);
     case 'conflicts':
       return conflictsTemplate(baseContext);
+     // Add a case for 'all' if you have a combined template
+     // case 'all':
+     //   return allDocumentTemplate(baseContext);
     default:
       throw new Error(`Unknown template type: ${templateType}`);
   }
@@ -44,32 +54,31 @@ GUIDELINES:
 function legalFrameworkTemplate(baseContext) {
   return `${baseContext}
 
-CREATE A DETAILED LEGAL FRAMEWORK OVERVIEW:
+TASK: CREATE A DETAILED LEGAL FRAMEWORK OVERVIEW FOR THE "${worldConcept}" WORLD.
 
-You are crafting the foundational legal system for a fictional world. Begin directly with an immersive description of this world's legal framework WITHOUT mentioning the parameters or prompt inputs.
+Your response must provide a comprehensive, richly detailed description of this world's foundational legal system.
 
-Your response must:
-- Provide a comprehensive, richly detailed description (600-800 words minimum) 
-- Organize the content into clearly titled sections with at least 5-7 well-developed paragraphs
-- Include specific terminology, institutions, and concepts unique to this world
-- Maintain internal consistency throughout the legal system
+REQUIREMENTS:
+- Provide substantive, well-developed content covering the legal framework. Aim for depth over brevity.
+- Integrate the Technology Level, Government Type, and other parameters throughout the description.
+- Organize the content into clear sections. Use simple, descriptive section titles followed by a colon on a new line.
+- Include specific terminology, institutions, and concepts unique to this world.
+- The description should feel like an excerpt from a detailed worldbuilding guide or academic text about this fictional society. Use concrete examples to illustrate abstract concepts.
+- Cover the following essential elements in depth within your sections:
+    1. FUNDAMENTAL PRINCIPLES: The philosophical foundations, core values, and underlying assumptions.
+    2. LEGAL STRUCTURES: The hierarchies, institutions, or mechanisms through which law operates.
+    3. LAWMAKING PROCESSES: How laws are created, amended, and repealed.
+    4. ENFORCEMENT MECHANISMS: Methods, technologies, and entities responsible for compliance.
+    5. JUDICIAL SYSTEM: How disputes are resolved and justice administered.
+    6. RIGHTS & OBLIGATIONS: Fundamental rights, privileges, and duties of different beings/groups.
+    7. UNIQUE LEGAL CONCEPTS: Special doctrines, procedures, or frameworks specific to this world.
 
-Cover these essential elements in depth:
-1. FUNDAMENTAL PRINCIPLES: The philosophical foundations, core values, and underlying assumptions of the legal system
-2. LEGAL STRUCTURES: The hierarchies, institutions, or mechanisms through which law operates
-3. LAWMAKING PROCESSES: How laws are created, amended, and repealed, and by which authorities
-4. ENFORCEMENT MECHANISMS: The methods, technologies, and entities responsible for ensuring compliance
-5. JUDICIAL SYSTEM: How disputes are resolved, trials conducted, and precedents established
-6. RIGHTS & OBLIGATIONS: The fundamental rights, privileges, and duties of different classes of beings
-7. UNIQUE LEGAL CONCEPTS: Special legal doctrines, procedures, or frameworks specific to this world
+FORMATTING:
+- Use simple line breaks for paragraphs.
+- Use a simple title for each section on its own line, followed by a colon (e.g., **Fundamental Principles:**). Do NOT use markdown headers (like ##) or numbering for sections.
+- Ensure clear separation between sections.
 
-Your description should feel like an excerpt from a detailed worldbuilding guide or academic text about this fictional society. Use concrete examples to illustrate abstract concepts. Develop ideas fully with substantive explanations rather than brief mentions.
-
-DO NOT USE PLACEHOLDER TEXT OR GENERIC DESCRIPTIONS. CREATE SPECIFIC, DISTINCTIVE LEGAL ELEMENTS THAT REFLECT THE UNIQUE NATURE OF THIS WORLD.
-
-IMPORTANT: Begin immediately with the content. Do NOT start with phrases like "This legal framework for [world concept]..." or any other meta-references to the prompt.
-
-FORMAT YOUR RESPONSE IN PLAIN TEXT WITH CLEAR PARAGRAPH BREAKS. Do not use any special formatting, numbering, or markdown.
+IMPORTANT: Begin immediately with the first section title and content. Do NOT include any introductory sentences before the first section.
 `;
 }
 
@@ -77,38 +86,35 @@ FORMAT YOUR RESPONSE IN PLAIN TEXT WITH CLEAR PARAGRAPH BREAKS. Do not use any s
 function policiesTemplate(baseContext) {
   return `${baseContext}
 
-CREATE 5 DETAILED AND UNIQUE POLICIES FOR THIS FICTIONAL WORLD:
+TASK: CREATE 5 DETAILED AND UNIQUE POLICIES FOR THE "${worldConcept}" WORLD.
 
-You are crafting key laws or regulations that would exist in this fictional society. Each policy should be SPECIFIC to this world's unique characteristics and challenges.
+You are crafting key laws or regulations that would specifically exist in this fictional society based on its concept and parameters.
 
-For EACH policy provide:
-1. A distinctive, creative POLICY NAME (4-8 words) that reflects the world's terminology and style
-2. A DETAILED DESCRIPTION (3-5 sentences) explaining:
-   - What the policy regulates or establishes
-   - Why this policy exists in this society
-   - How it is enforced
-   - Who is most affected by it
-   - Any interesting exceptions or special provisions
+REQUIREMENTS:
+- Generate exactly 5 distinct policies.
+- Each policy must be directly related to the world concept and integrate the provided parameters.
+- Policies should cover different aspects of society (e.g., resources, rights, technology, governance, social norms).
+- Include at least one policy that clearly creates interesting story possibilities or inherent conflicts based on the world's nature.
+- Use language, terminology, and concepts appropriate to the world's Technology Level and Government Type.
+- Avoid generic policy ideas or descriptions.
 
-IMPORTANT REQUIREMENTS:
-- Each policy must be directly related to the world concept
-- Policies should cover different aspects of society (resources, rights, technology, governance, etc.)
-- Use language, terminology, and concepts appropriate to the world's technology level
-- Include at least one policy that creates interesting story possibilities or conflicts
-- DO NOT use generic policy names or descriptions
+For EACH of the 5 policies, provide the following structure and content:
 
-FORMAT YOUR RESPONSE AS:
-===POLICY 1===
-NAME: [Distinctive Policy Name]
-DESCRIPTION: [3-5 sentence detailed description specific to this world]
+FORMAT FOR EACH POLICY:
+===POLICY [Number]===
+NAME: [A distinctive, creative Policy Name relevant to the world, 4-8 words]
+DESCRIPTION: [A detailed paragraph (aim for 3-5 sentences) explaining:
+- What the policy regulates/establishes.
+- The primary reason or context for its existence in THIS society.
+- How it is typically enforced or its main mechanism.
+- Who is most significantly affected (e.g., a specific group, all citizens, etc.).
+- Any interesting nuances, exceptions, or points of tension.]
 
-===POLICY 2===
-NAME: [Distinctive Policy Name]
-DESCRIPTION: [3-5 sentence detailed description specific to this world]
-
-(Repeat for all 5 policies)
-
-IMPORTANT: Ensure each policy has both a DISTINCTIVE NAME and DETAILED DESCRIPTION specific to this world.
+IMPORTANT:
+- Use the exact marker "===POLICY [Number]===" (e.g., "===POLICY 1===") for each policy block.
+- Use the exact labels "NAME:" and "DESCRIPTION:".
+- Provide substantive detail in the DESCRIPTION field specific to the world.
+- Begin immediately with "===POLICY 1===" without any introductory text.
 `;
 }
 
@@ -116,23 +122,57 @@ IMPORTANT: Ensure each policy has both a DISTINCTIVE NAME and DETAILED DESCRIPTI
 function conflictsTemplate(baseContext) {
   return `${baseContext}
 
-CREATE 3 NARRATIVE CONFLICTS BASED ON THIS LEGAL SYSTEM:
-- Each conflict should be a specific scenario that could drive a storyline
-- Make each conflict 2-3 sentences long (50-70 words)
-- Focus on tensions that reveal interesting aspects of the legal system
-- Include the key characters/groups involved and the central legal issue
-- Each conflict should have plot potential for a fiction writer
+TASK: CREATE 3 NARRATIVE CONFLICT SCENARIOS BASED ON THE LEGAL SYSTEM AND WORLD CONCEPT OF "${worldConcept}".
 
-FORMAT YOUR RESPONSE AS:
-CONFLICT 1: [2-3 sentence description of a specific legal conflict]
+Generate specific conflict scenarios that highlight tensions, loopholes, or points of contention within the world's legal framework and society, providing clear story hooks.
 
-CONFLICT 2: [2-3 sentence description of a specific legal conflict]
+REQUIREMENTS:
+- Generate exactly 3 distinct conflict scenarios.
+- Each scenario must be plausible within the context of the world concept and parameters.
+- Focus on tensions that reveal interesting aspects of the legal system, laws, or societal structure.
+- Briefly mention the key characters or groups involved and the central legal or societal issue driving the conflict.
+- Ensure each conflict has potential for driving a narrative storyline.
+- Integrate the world's parameters (Tech Level, Government Type, etc.) into the conflict's nature.
 
-CONFLICT 3: [2-3 sentence description of a specific legal conflict]
+FORMAT FOR EACH CONFLICT:
+CONFLICT [Number]: [A concise, narrative description of the conflict scenario. Aim for 50-70 words (2-4 sentences).]
 
-MAKE EACH CONFLICT DISTINCT AND NARRATIVE-FOCUSED.
+IMPORTANT:
+- Use the exact marker "CONFLICT [Number]:" (e.g., "CONFLICT 1:") for each conflict description.
+- Provide specific, narrative detail for the scenario.
+- Begin immediately with "CONFLICT 1:" without any introductory text.
 `;
 }
+
+// Example of a potential 'all' template structure - YOU NEED TO CREATE THIS if you use generateDocument('all', ...)
+/*
+function allDocumentTemplate(baseContext) {
+    // This template needs to instruct the model to generate ALL sections
+    // using distinct markers that parseAllDocumentSections can find.
+    // The current parser expects markers like ===== SECTION 1: LEGAL FRAMEWORK =====
+    return `${baseContext}
+
+TASK: GENERATE A COMPLETE DOCUMENT INCLUDING LEGAL FRAMEWORK, POLICIES, AND CONFLICTS FOR THE "${worldConcept}" WORLD.
+
+Provide all sections in order, using the specified markers and internal formats.
+
+===== SECTION 1: LEGAL FRAMEWORK =====
+
+[Content following the legalFrameworkTemplate's internal formatting rules (Section Titles: and paragraph breaks)]
+
+===== SECTION 2: POLICIES =====
+
+[Content following the policiesTemplate's internal formatting rules (===POLICY X===, NAME:, DESCRIPTION:)]
+
+===== SECTION 3: CONFLICTS =====
+
+[Content following the conflictsTemplate's internal formatting rules (CONFLICT X:)]
+
+IMPORTANT: Use the exact markers shown above to separate the sections. Begin immediately with the first marker.
+`;
+}
+*/
+
 
 module.exports = {
   constructPrompt
