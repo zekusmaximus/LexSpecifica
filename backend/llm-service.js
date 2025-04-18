@@ -8,7 +8,7 @@ const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
 
 // Google AI API endpoint for Gemini 1.5-Flash
 // Using the global endpoint. You might use a regional one if needed.
-const API_ENDPOINT = 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent';
+const API_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent';
 
 // Main function to call the Gemini model via Google AI API
 async function callGeminiModel(prompt, parameters = {}) {
