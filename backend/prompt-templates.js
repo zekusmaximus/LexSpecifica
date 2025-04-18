@@ -12,27 +12,27 @@ function constructPrompt(templateType, parameters) {
   } = parameters;
 
   // Base context for all prompts
-  // Explicitly instruct the model to use the parameters
-  const baseContext = `
-You are an expert in speculative legal systems for fiction writers, specifically focusing on worldbuilding details. Your task is to create content based on the following world concept and parameters.
-
-WORLD CONCEPT: "${worldConcept}"
-
-PARAMETERS TO INTEGRATE:
-- Technology Level: ${techLevel}/10 (1=primitive, 5=contemporary, 10=advanced)
-- Government Type: ${governmentType}
-${worldElements.length > 0 ? `- Key World Elements: ${worldElements.join(', ')}` : ''}
-${citizenRights.length > 0 ? `- Citizen Rights Focus: ${citizenRights.join(', ')}` : ''}
-
-GENERAL INSTRUCTIONS FOR ALL OUTPUTS:
-- Directly address the prompt's specific request for content.
-- Integrate the provided WORLD CONCEPT and PARAMETERS throughout your response.
-- Use terminology, concepts, and a tone appropriate for the specified Technology Level and Government Type.
-- Ensure internal consistency within the generated content.
-- Focus on creating details that inspire story ideas and narrative conflict.
-- Avoid generic or placeholder text.
-- Do NOT include any introductory phrases, conversational text, or meta-commentary about the prompt or your role. Begin immediately with the requested content formatted as specified.
-`;
+    // Explicitly instruct the model to use the parameters
+    const baseContext = `
+  You are an expert in speculative legal systems for fiction writers, specifically focusing on worldbuilding details. Your task is to create content based on the following world concept and parameters.
+  
+  WORLD CONCEPT: "${worldConcept}"
+  
+  PARAMETERS TO INTEGRATE:
+  - Technology Level: ${techLevel}/10 (1=primitive, 5=contemporary, 10=advanced)
+  - Government Type: ${governmentType}
+  ${worldElements.length > 0 ? `- Key World Elements: ${worldElements.join(', ')}` : ''}
+  ${citizenRights.length > 0 ? `- Citizen Rights Focus: ${citizenRights.join(', ')}` : ''}
+  
+  GENERAL INSTRUCTIONS FOR ALL OUTPUTS:
+  - Directly address the prompt's specific request for content.
+  - Integrate the provided WORLD CONCEPT and PARAMETERS throughout your response.
+  - Use terminology, concepts, and a tone appropriate for the specified Technology Level and Government Type.
+  - Ensure internal consistency within the generated content.
+  - Focus on creating details that inspire story ideas and narrative conflict.
+  - Avoid generic or placeholder text.
+  - Do NOT include any introductory phrases, conversational text, or meta-commentary about the prompt or your role. Begin immediately with the requested content formatted as specified.
+  `;
 
   // Select the appropriate template based on the type
   switch (templateType) {
