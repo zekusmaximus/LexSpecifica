@@ -303,29 +303,57 @@ const ConflictsSection = ({ conflicts }) => {
   
   // Function to download the compiled framework as a text file
   const downloadFramework = () => {
+    // --- ADD LOGS START ---
+    console.log("1. downloadFramework function started.");
+
     const content = compileFullFramework();
-    if (!content) return;
-    
-    // Create a normalized filename from the world concept
+    console.log("2. Compiled content length:", content ? content.length : 'null or empty');
+
+    if (!content) {
+        console.error("Error: compileFullFramework returned null or empty content. Exiting.");
+        return; // Stop if no content
+    }
+
     const filename = worldConcept
       .substring(0, 20)
       .replace(/[^a-z0-9]/gi, '_')
       .toLowerCase();
-    
-    // Create a blob with the content
-    const blob = new Blob([content], { type: 'text/markdown' });
-    const url = URL.createObjectURL(blob);
-    
-    // Create a temporary link to trigger the download
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${filename}_legal_framework.md`;
-    document.body.appendChild(link);
-    link.click();
-    
-    // Clean up
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    console.log("3. Generated filename:", filename);
+
+    try { // Add a try...catch block to catch potential errors
+        const blob = new Blob([content], { type: 'text/markdown' });
+        console.log("4. Blob created, size:", blob.size);
+
+        const url = URL.createObjectURL(blob);
+        console.log("5. Object URL created:", url ? url.substring(0, 50) + '...' : 'null'); // Log part of URL
+
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${filename}_legal_framework.md`;
+        console.log("6. Link element created with download attribute:", link.download);
+
+        document.body.appendChild(link);
+        console.log("7. Link appended to body.");
+
+        link.click(); // <<< This is the likely silent failure point
+        console.log("8. link.click() called."); // <<< Does it get here?
+
+        // Short delay before removing the link, sometimes helps
+        setTimeout(() => {
+            try {
+                document.body.removeChild(link);
+                console.log("9. Link removed from body.");
+                URL.revokeObjectURL(url);
+                console.log("10. Object URL revoked.");
+            } catch (cleanupError) {
+                console.error("Error during cleanup:", cleanupError);
+            }
+        }, 100); // 100ms delay
+
+    } catch (error) {
+        console.error("!!! Error during download process:", error); // Catch any errors
+    }
+    // --- ADD LOGS END ---
   };
   
   // Function to copy the compiled framework to clipboard
@@ -384,7 +412,7 @@ const ConflictsSection = ({ conflicts }) => {
         }}></div>
           <div style={{ 
             backgroundColor: 'rgba(0,0,0,0.5)', 
-            padding: '15xp 20px', 
+            padding: '15px 20px', 
             borderRadius: '5px',
             maxWidth: '700px',
             width: '100%',
@@ -745,6 +773,7 @@ const ConflictsSection = ({ conflicts }) => {
                       borderRadius: '4px',
                       cursor: 'pointer' 
                     }}
+                    onClick={downloadFramework}
                   >
                     Save Framework
                   </button>
