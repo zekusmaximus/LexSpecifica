@@ -400,7 +400,7 @@ function App() {
           style={{
             width: '100%', // Make it span the width of the parent dark div
             height: '250px', // Adjust height as needed for the panorama
-            backgroundImage: 'url(/city.jpeg)', // Reference from public folder
+            backgroundImage: 'url(./src/assets/city.jpeg)', // Reference from public folder
             backgroundSize: 'cover', // Cover the area
             backgroundPosition: 'center', // Center the image
             // No border radius here, parent takes care of it
